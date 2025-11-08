@@ -1,11 +1,15 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
+from knowledge import load_knowledge, search_knowledge
+
 
 model_name = "microsoft/DialoGPT-medium"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
+knowledge_list = load_knowledge()
+print(f"Knowledge chargé : {len(knowledge_list)} fragments")
 print("Chatbot IA : Salut ! Tape 'quit' pour arrêter.")
 
 chat_history_ids = None
@@ -28,8 +32,6 @@ def search_history(keyword):
                     results.append(line.strip())
     return results
 
-
-# Charger l'historique depuis le fichier
 mode = input("Mode de conversation (reset/continue) : ").lower()
 if mode == "continue" and os.path.exists(history_file):
     with open(history_file, "r", encoding="utf-8") as f:
@@ -42,8 +44,6 @@ if mode == "continue" and os.path.exists(history_file):
 elif mode == "reset":
     with open(history_file, "w", encoding="utf-8") as f:
         pass
-
-
 
 while True:
     user_input = input("Toi : ")
@@ -78,15 +78,21 @@ while True:
             print(f"Chatbot : {b}")
         continue
 
-    if user_input.lower().startswith("search "):
-        keyword = user_input[7:]
+    if user_input.lower().startswith("search ") or user_input.lower().startswith("find "):
+        keyword = user_input.split(" ", 1)[1]
         results = search_history(keyword)
         if results:
-            print("Chatbot : Voici les passages trouvés :")
+            print("Chatbot (memory) : Voici les passages trouvés :")
             for r in results:
                 print(r)
         else:
-            print(f"Chatbot : Aucun résultat trouvé pour '{keyword}'")
+            results_knowledge = search_knowledge(keyword, knowledge_list)
+            if results_knowledge:
+                print("Chatbot (knowledge) : Voici les passages trouvés dans le knowledge :")
+                for r in results_knowledge:
+                    print(f"{r['section']} - {r['text']}")
+            else:
+                print(f"Chatbot : Aucun résultat trouvé pour '{keyword}'")
         continue
 
     history_user.append(user_input)
