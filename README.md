@@ -45,57 +45,52 @@ Commandes disponibles :
 /clear → vider l’historique
 /quit → quitter le chat
 
-ROAD MAP :
 
-✅ Étapes réalisées
+---
 
-Mise en place de l’environnement
+## Roadmap / Évolution du projet
 
-Python 3.11, venv, dépendances
+### **Étape 1 : Organisation et nettoyage**
+- [x] Structurer les dossiers `data_raw` et `knowledge`
+- [x] Créer `main.py` pour le chatbot
+- [x] Script `build_knowledge.py` pour générer `knowledge.json`
 
-Chatbot fonctionnel
+### **Étape 2 : Knowledge management**
+- [x] Créer `knowledge.py` pour gérer les recherches dans le knowledge
+- [x] Normalisation du texte pour gérer accents et majuscules
+- [ ] Ajouter tags / relations (plus tard, envisager un graphe de connaissances)
 
-DialoGPT-medium opérationnel avec boucle de dialogue
+### **Étape 3 : Interaction avec le chatbot**
+- [x] Recherche dans l’historique utilisateur
+- [x] Recherche dans le knowledge automatiquement si non trouvé en mémoire
+- [ ] Améliorer la pertinence de la recherche (ex. suggestions, relations entre entités)
 
-Historique et persistance
+### **Étape 4 : Fine-tuning**
+- [ ] Préparer `knowledge_dataset.json` pour le fine-tuning
+- [ ] Script `build_finetune_dataset.py` pour transformer le knowledge en dataset OpenAI
+- [ ] Choisir un modèle de base pour fine-tuning (GPT-3.5 / GPT-4 selon ressources)
+- [ ] Entraînement avec LoRA / PEFT
+- [ ] Tester le modèle fine-tuné avec `main.py`
 
-Sauvegarde automatique, reset, lecture de l’historique
+### **Étape 5 : Améliorations futures**
+- [ ] Intégrer une interface web / GUI
+- [ ] Ajouter des suggestions dynamiques du bot basées sur les connexions entre personnages, lieux, objets
+- [ ] Gestion automatique des mises à jour du knowledge
+- [ ] Optimisation du dataset pour inclure synonymes et variations linguistiques
+- [ ] Possibilité de mise à jour via le bot (ajouter du knowledge en live)
 
-Mode “Continue”
+---
 
-Reprise de conversation avec contexte limité
+## Installation
 
-Mode “Search” et commandes
+```bash
+git clone https://github.com/TeddyRhim/ChatbotIA.git
+cd ChatbotIA
+python -m venv venv
+venv\Scripts\activate   # Windows
+# source venv/bin/activate  # Linux / Mac
+pip install -r requirements.txt
 
-Recherche dans l’historique, commandes /help, /quit, /continue
-
-⚙️ Étape en cours
-
-Création et automatisation du savoir
-
-Nettoyage et organisation automatique des données brutes
-
-Génération d’un dataset JSON prêt pour le fine-tuning
-
-🔜 Étapes à venir
-
-Fine-tuning léger (LoRA / PEFT)
-
-Spécialisation du chatbot sur l’univers choisi
-
-Modularisation du code
-
-Organisation propre des scripts et modules
-
-Interface utilisateur
-
-Console améliorée ou interface web pour meilleure expérience
-
-Mémoire externe / RAG
-
-Consultation dynamique d’une base de connaissance
-
-Optimisation & extension
 
 Multi-utilisateur, profils, export du modèle fine-tuné
 
