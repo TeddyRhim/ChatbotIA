@@ -6,3 +6,9 @@ Toi : I'm good too, how the weather is today ?
 Chatbot : It's been raining for a few days now.
 Toi : good, have a nice day
 Chatbot : You too
+Toi : Salut
+Chatbot : Salut!
+Toi : comment ça va ?
+Chatbot : I'm not sure what you're asking.
+Toi : how are you ?
+Chatbot : I'm good, how are you
