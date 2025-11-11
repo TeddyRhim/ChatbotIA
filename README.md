@@ -1,6 +1,6 @@
 # Chatbot IA - DialoGPT personnalisé
 
-Un chatbot Python basé sur **DialoGPT-medium**, avec historique, mémoire partielle et possibilité de spécialisation via fine-tuning léger (LoRA/PEFT).  
+Un chatbot Python basé sur **DialoGPT-medium**, avec historique, mémoire partielle et possibilité de spécialisation via fine-tuning léger (Pas de GPU Cuda donc compliqué de faire mieux).  
 Ce projet est conçu pour évoluer, en intégrant à la fois des fonctionnalités interactives et des mécanismes de personnalisation sur mesure.
 
 ---
