@@ -21,7 +21,7 @@ Ce projet est conçu pour évoluer, en intégrant à la fois des fonctionnalité
 
 1. Cloner le dépôt :
 ```bash
-git clone git@github.com:ton-utilisateur/ton-depot.git
+git clone git@github.com:ton-utilisateurChatbotIA
 cd ton-depot
 
 Environnement vituel + activation :
