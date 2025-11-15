@@ -3,6 +3,11 @@
 Un chatbot Python basé sur **DialoGPT-medium** (ou GPT-2 pour tests LoRA), avec historique, mémoire partielle et possibilité de spécialisation via fine-tuning léger.  
 Ce projet est conçu pour évoluer, en intégrant à la fois des fonctionnalités interactives et des mécanismes de personnalisation sur mesure, tout en exploitant un **knowledge base** statique pour guider les réponses.
 * Le fine-tuning n’a pas pu être conclu en raison d’un dataset trop limité. Étant donné que l’utilisation reste personnelle, je ne cherche pas encore à enrichir les données.
+* Par défaut, les fichiers de HuggingFace sont stockés dans le dossier standard. Dans ce projet, j’ai redirigé le cache vers D:\huggingface_cache à cause d’un manque de place :
+* os.environ["HF_HOME"] = r"D:\huggingface_cache" (vous pouvez supprimer cette ligne de finetune_lora.py (ligne 10))
+
+
+Si vous n’avez pas ce problème, vous pouvez supprimer cette ligne pour éviter de disperser vos données.
 ---
 
 ## Fonctionnalités principales
