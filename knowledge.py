@@ -10,7 +10,6 @@ def load_knowledge(path="data/knowledge/knowledge.json"):
         return json.load(f)
 
 def normalize_text(text):
-    # transforme les caractères accentués en caractères simples
     return ''.join(
         c for c in unicodedata.normalize('NFD', text)
         if unicodedata.category(c) != 'Mn'
@@ -24,7 +23,6 @@ def search_knowledge(user_query, knowledge, limit=5):
             results.append(fragment)
     return results[:limit]
 
-# test de la fonction de recherche, se lance si le fichier est executé directement
 if __name__ == "__main__":
     knowledge_list = load_knowledge()
 
