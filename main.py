@@ -116,7 +116,7 @@ class Chatbot:
 
     def _build_messages(self, user_input, fragments):
         chat = [m for m in self.history if m["kind"] == "chat"]
-        recent = chat[-2 * self.context_turns:]
+        recent = chat[-2 * self.context_turns:] if self.context_turns else []
 
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         messages += [
@@ -162,14 +162,23 @@ class Chatbot:
         )
 
 
-    def generate_response(self, user_input):
+    def answer(self, user_input, record=True):
+        """Répond et rend aussi les fiches fournies au modèle : {text, fragments, error}.
+
+        `record=False` n'écrit rien dans l'historique (utilisé par l'évaluation).
+        """
         fragments = self.retriever.retrieve(user_input, k=self.top_k, extra=self.extra_links)
         response, error = self._chat(self._build_messages(user_input, fragments), temperature=0.3)
         if error:
-            return error
+            return {"text": error, "fragments": fragments, "error": True}
         response = self._with_sources(response, fragments)
-        self._add_exchange(user_input, response, kind="chat")
-        return response
+        if record:
+            self._add_exchange(user_input, response, kind="chat")
+        return {"text": response, "fragments": fragments, "error": False}
+
+
+    def generate_response(self, user_input):
+        return self.answer(user_input)["text"]
 
 
     def _bridge_text(self, indices):

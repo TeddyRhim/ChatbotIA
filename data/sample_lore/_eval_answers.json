@@ -1,0 +1,10 @@
+[
+ {"question": "Qui est le roi d'Aldoria ?", "type": "fait", "facts": [["Maren"]]},
+ {"question": "Où se trouve la tour de Vélan ?", "type": "fait", "facts": [["nord"]]},
+ {"question": "Qui garde la carte du royaume ?", "type": "fait", "facts": [["Elowen"]]},
+ {"question": "Que cherche Korrin le Borgne ?", "type": "fait", "facts": [["Cristal"]]},
+ {"question": "Quel âge a le roi Maren ?", "type": "abstention"},
+ {"question": "Combien de soldats compte l'armée d'Aldoria ?", "type": "abstention"},
+ {"question": "Elowen est-elle la sœur du roi ?", "type": "incertain"},
+ {"question": "Le roi a-t-il perdu sa sœur dans la forêt ?", "type": "incertain"}
+]

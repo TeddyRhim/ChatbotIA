@@ -18,3 +18,6 @@ data/vectordb/
 
 # Poids LoRA issus de l essai de fine-tuning
 data/lora_finetuned/
+
+# Résultats détaillés des évaluations (contiennent des extraits de la campagne)
+eval/results_*.json
