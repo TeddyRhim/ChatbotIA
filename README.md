@@ -25,7 +25,9 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 
 - `main.py` : classe `Chatbot` (Ollama, historique, récupération des extraits, génération).
 - `console_chat.py` / `interface.py` : interfaces terminal et web.
-- `knowledge.py` : chargement et recherche dans la base de connaissances.
+- `knowledge.py` : chargement, recherche `search` et récupération par mots-clés (noms, alias).
+- `vector_store.py` / `retrieval.py` : recherche par sens (embeddings `multilingual-e5-small` dans ChromaDB, index dans `data/vectordb/`, reconstruit automatiquement) et fusion hybride avec les mots-clés.
+- `eval/eval_retrieval.py` : compare mots-clés, sens et hybride (hit@k, MRR) sur un jeu de questions (`_eval.json`).
 - `data/lore/` : fiches de l'univers (privé) ; `data/sample_lore/` : exemple public ; `data/data_raw/` : notes brutes (privé).
 - `data/knowledge/knowledge.json` : base générée par `utils/build_knowledge.py` (non versionnée).
 - `tests/` : tests unitaires (`python -m unittest discover -s tests -t .`).
@@ -91,12 +93,16 @@ statut: alliée
 Objectifs, tout en local et gratuit :
 
 1. ✅ **Modèle de génération** : DialoGPT remplacé par un LLM récent (Qwen2.5 7B ou équivalent, en 4 bits) servi par [Ollama](https://ollama.com).
-2. **Base vectorielle** : découper les documents, calculer des embeddings multilingues (`multilingual-e5-small` ou `bge-m3`) et les stocker dans ChromaDB, à la place de la recherche par mot-clé de `knowledge.py`.
+2. ✅ **Base vectorielle** : découper les documents, calculer des embeddings multilingues (`multilingual-e5-small` ou `bge-m3`) et les stocker dans ChromaDB, à la place de la recherche par mot-clé de `knowledge.py`.
 3. ✅ **Sources citées** (première version) : réponses fondées uniquement sur les passages retrouvés, avec références `[1]`, `[2]`, et un « je ne sais pas » quand rien de pertinent n'est trouvé.
-4. **Évaluation** : jeu de 30 à 50 questions avec réponses attendues, mesure du retrieval (hit rate, MRR) et de la fidélité des réponses, pour comparer les configurations avec des chiffres.
+4. ✅ **Évaluation** (récupération ; évaluation des réponses à venir) : jeu de 30 à 50 questions avec réponses attendues, mesure du retrieval (hit rate, MRR) et de la fidélité des réponses, pour comparer les configurations avec des chiffres.
 5. **Interface** : conserver Streamlit (`interface.py`) en affichant les sources sous chaque réponse.
 
 Ce qui est conservé : l'historique de conversation, la base `knowledge.json` (comme premier corpus) et l'interface web. Le code LoRA reste dans `utils/` comme trace de l'expérimentation.
+
+Résultats actuels de la récupération (25 questions de test, 156 fiches) : hit@6 = 88 % mots-clés seuls, 92 % sens seul, **96 % hybride** (`python eval/eval_retrieval.py`).
+
+À venir : liens explicites entre fiches (récupération des fiches voisines) et un mode `piste` qui propose des liens non écrits, étiquetés comme hypothèses et sourcés.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

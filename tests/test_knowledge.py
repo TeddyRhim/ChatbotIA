@@ -1,6 +1,7 @@
 import unittest
 
 from knowledge import load_knowledge, normalize_text, retrieve, search_knowledge
+from retrieval import HybridRetriever, fuse_rankings
 from utils.build_knowledge import SAMPLE_LORE, build, parse_fiches
 
 SAMPLE = """# Elowen
@@ -88,6 +89,19 @@ class RetrieveTest(unittest.TestCase):
 
     def test_nothing_relevant_gives_empty_list(self):
         self.assertEqual(retrieve("Parle-moi des dragons", self.knowledge), [])
+
+
+class HybridTest(unittest.TestCase):
+    def test_fusion_favors_items_ranked_well_in_both_lists(self):
+        self.assertEqual(fuse_rankings([[1, 2, 3], [2, 9, 1]], k=2), [2, 1])
+
+    def test_retriever_without_vector_store_uses_keywords(self):
+        knowledge = [
+            {"section": "PERSONNAGES", "subsection": "Elowen", "aliases": [], "text": "Gardienne de la tour"},
+            {"section": "LIEUX", "subsection": "Phare", "aliases": [], "text": "Un phare au bord de la mer"},
+        ]
+        result = HybridRetriever(knowledge).retrieve("Qui est Elowen ?", k=1)
+        self.assertEqual(result[0]["subsection"], "Elowen")
 
 
 class LoadKnowledgeTest(unittest.TestCase):

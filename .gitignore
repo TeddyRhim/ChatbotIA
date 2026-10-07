@@ -14,6 +14,7 @@ chat_history.txt
 
 # Générés localement (python utils/build_knowledge.py)
 data/knowledge/*.json
+data/vectordb/
 
 # Poids LoRA issus de l essai de fine-tuning
 data/lora_finetuned/

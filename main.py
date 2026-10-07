@@ -3,7 +3,8 @@ import os
 
 import ollama
 
-from knowledge import load_knowledge, search_knowledge, retrieve, format_fragment, format_label
+from knowledge import load_knowledge, search_knowledge, format_fragment, format_label
+from retrieval import HybridRetriever
 
 SYSTEM_PROMPT = """Tu es l'assistant de campagne d'un joueur de jeu de rôle : tu l'aides à retrouver ce que ses notes disent. Réponds toujours en français, de façon concise.
 Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis et cite ceux que tu utilises avec [1], [2]...
@@ -16,7 +17,7 @@ class Chatbot:
     def __init__(self, model="qwen2.5:7b",
                  history_file="chat_history.json",
                  context_turns=3,
-                 top_k=6):
+                 top_k=8):
 
         self.model = model
         self.history_file = history_file
@@ -24,10 +25,23 @@ class Chatbot:
         self.top_k = top_k
 
         self.knowledge_list = load_knowledge()
+        self.retriever = HybridRetriever(self.knowledge_list, self._open_vector_store())
 
         # Chaque message : {"role": "user" | "bot", "kind": "chat" | "search", "content": str}
         self.history = []
         self._load_history()
+
+
+    def _open_vector_store(self):
+        """Recherche par sens si possible ; sinon on retombe sur les mots-clés seuls."""
+        try:
+            from vector_store import VectorStore
+            store = VectorStore()
+            store.ensure_index(self.knowledge_list)
+            return store
+        except Exception as e:
+            print(f"[avertissement] recherche par sens indisponible, mots-clés seuls ({e})")
+            return None
 
 
     def _load_history(self):
@@ -108,7 +122,7 @@ class Chatbot:
 
 
     def generate_response(self, user_input):
-        fragments = retrieve(user_input, self.knowledge_list, k=self.top_k)
+        fragments = self.retriever.retrieve(user_input, k=self.top_k)
 
         try:
             reply = ollama.chat(

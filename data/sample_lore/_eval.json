@@ -1,0 +1,36 @@
+[
+ {
+  "question": "Qui garde la carte du royaume ?",
+  "expected": [
+   "Elowen Brindelune",
+   "Tour de Vélan"
+  ]
+ },
+ {
+  "question": "Qui veut voler la gemme qui brille à l'aube ?",
+  "expected": [
+   "Korrin le Borgne",
+   "Cristal d'aube"
+  ]
+ },
+ {
+  "question": "Qui dirige Aldoria ?",
+  "expected": [
+   "Maren Voss",
+   "Aldoria"
+  ]
+ },
+ {
+  "question": "Pourquoi ne peut-on pas entrer dans la forêt ?",
+  "expected": [
+   "Forêt de Thorn",
+   "Maren Voss"
+  ]
+ },
+ {
+  "question": "Quelle mission est déjà terminée ?",
+  "expected": [
+   "Escorter la caravane de Port-Lumière"
+  ]
+ }
+]
