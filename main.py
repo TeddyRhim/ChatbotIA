@@ -1,128 +1,115 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+import json
 import os
-from knowledge import load_knowledge, search_knowledge
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from knowledge import load_knowledge, search_knowledge, format_fragment
 
 
-model_name = "microsoft/DialoGPT-medium"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+class Chatbot:
+    def __init__(self, model_name="microsoft/DialoGPT-medium",
+                 history_file="chat_history.json",
+                 max_new_tokens=100,
+                 context_turns=3):
 
-knowledge_list = load_knowledge()
-print(f"Knowledge chargé : {len(knowledge_list)} fragments")
-print("Chatbot IA : Salut ! Tape 'quit' pour arrêter.")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name)
 
-chat_history_ids = None
-history_file = "chat_history.txt"
-max_tokens = 500
+        self.history_file = history_file
+        self.max_new_tokens = max_new_tokens
+        self.context_turns = context_turns
 
-history_user = []
-history_bot = []
+        self.knowledge_list = load_knowledge()
 
-# mémoire courte, récupère les 5 derniers messages de l'histo
-def get_recent_context(n=5):
-    return history_user[-n:], history_bot[-n:]
+        # Chaque message : {"role": "user" | "bot", "kind": "chat" | "search", "content": str}
+        self.history = []
+        self._load_history()
 
-def search_history(keyword):
-    results = []
-    if os.path.exists(history_file):
-        with open(history_file, "r", encoding="utf-8") as f:
-            for line in f:
-                if keyword.lower() in line.lower():
-                    results.append(line.strip())
-    return results
 
-mode = input("Mode de conversation (reset/continue) : ").lower()
-if mode == "continue" and os.path.exists(history_file):
-    with open(history_file, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            line = line.strip()
-            if line.startswith("Toi : "):
-                history_user.append(line.replace("Toi : ", ""))
-            elif line.startswith("Chatbot : "):
-                history_bot.append(line.replace("Chatbot : ", ""))
-elif mode == "reset":
-    with open(history_file, "w", encoding="utf-8") as f:
-        pass
+    def _load_history(self):
+        if not os.path.exists(self.history_file):
+            return
+        try:
+            with open(self.history_file, "r", encoding="utf-8") as f:
+                self.history = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            self.history = []
 
-while True:
-    user_input = input("Toi : ")
 
-    if user_input.lower() == "quit":
-        print("Chatbot : À bientôt !")
-        chat_history_ids = None
-        break
+    def _save_history(self):
+        with open(self.history_file, "w", encoding="utf-8") as f:
+            json.dump(self.history, f, ensure_ascii=False, indent=2)
 
-    if user_input.lower() in ["!help", "/help"]:
-        print("Chatbot : Commandes disponibles :")
-        print("- quit → quitter la session")
-        print("- reset → effacer l'historique")
-        print("- history → afficher l'historique complet")
-        print("- search <mot> → chercher un sujet dans l'historique")
-        print("- help → afficher cette liste")
-        continue
 
-    if user_input.lower() == "reset":
-        print("Chatbot : Historique effacé?")
-        chat_history_ids = None
-        history_user = []
-        history_bot = []
-        with open(history_file, "w", encoding="utf-8") as f:
-            pass
-        continue
+    def reset_history(self):
+        self.history = []
+        self._save_history()
 
-    if user_input.lower() == "history":
-        print("Chatbot : Historique complet :")
-        for u, b in zip(history_user, history_bot):
-            print(f"Toi : {u}")
-            print(f"Chatbot : {b}")
-        continue
 
-    if user_input.lower().startswith("search ") or user_input.lower().startswith("find "):
-        keyword = user_input.split(" ", 1)[1]
-        results = search_history(keyword)
-        if results:
-            print("Chatbot (memory) : Voici les passages trouvés :")
-            for r in results:
-                print(r)
+    def _add_exchange(self, user_msg, bot_msg, kind):
+        self.history.append({"role": "user", "kind": kind, "content": user_msg})
+        self.history.append({"role": "bot", "kind": kind, "content": bot_msg})
+        self._save_history()
+
+
+    def respond(self, user_input):
+        """Point d'entrée commun : `search <mot>` interroge le knowledge, le reste va au modèle."""
+        text = user_input.strip()
+        if text.lower().startswith("search "):
+            return self.search(text[len("search "):])
+        return self.generate_response(text)
+
+
+    def search(self, keyword):
+        keyword = keyword.strip()
+        results_kn = search_knowledge(keyword, self.knowledge_list)
+        if results_kn:
+            bot_msg = "Voici ce que j'ai trouvé dans le knowledge :\n" + "\n".join(
+                f"- {format_fragment(item)}" for item in results_kn
+            )
         else:
-            results_knowledge = search_knowledge(keyword, knowledge_list)
-            if results_knowledge:
-                print("Chatbot (knowledge) : Voici les passages trouvés dans le knowledge :")
-                for r in results_knowledge:
-                    print(f"{r['section']} - {r['text']}")
+            results_history = [
+                f"- {m['content']}" for m in self.history
+                if m["kind"] == "chat" and keyword.lower() in m["content"].lower()
+            ]
+            if results_history:
+                bot_msg = "Voici ce que j'ai trouvé dans l'historique :\n" + "\n".join(results_history)
             else:
-                print(f"Chatbot : Aucun résultat trouvé pour '{keyword}'")
-        continue
+                bot_msg = f"Aucun résultat trouvé pour : {keyword}"
 
-    history_user.append(user_input)
-
-    recent_users, recent_bots = get_recent_context(n=5)
-    context_text = ""
-    for u, b in zip(recent_users, recent_bots):
-        context_text += f"User: {u} Bot: {b} "
-    context_text += f"User: {user_input} Bot:"
+        self._add_exchange(f"search {keyword}", bot_msg, kind="search")
+        return bot_msg
 
 
-    input_ids = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors="pt")
+    def _build_prompt_ids(self, user_input):
+        """Derniers échanges de chat + nouvelle question, séparés par le token de fin (format DialoGPT)."""
+        chat = [m for m in self.history if m["kind"] == "chat"]
+        recent = chat[-2 * self.context_turns:]
+        text = "".join(m["content"] + self.tokenizer.eos_token for m in recent)
+        text += user_input + self.tokenizer.eos_token
+        input_ids = self.tokenizer.encode(text, return_tensors="pt")
+        return input_ids[:, -800:]  # DialoGPT accepte 1024 tokens, on garde de la place pour la réponse
 
-    chat_history_ids = model.generate(
-        input_ids,
-        max_length=max_tokens,
-        pad_token_id=tokenizer.eos_token_id,
-        no_repeat_ngram_size=3,
-        top_k=100,
-        top_p=0.7,
-        temperature=0.8
-    )
 
-    output = tokenizer.decode(chat_history_ids[:, input_ids.shape[-1]:][0], skip_special_tokens=True)
-    print(f"Chatbot : {output}")
-    history_bot.append(output)
+    def generate_response(self, user_input):
+        input_ids = self._build_prompt_ids(user_input)
 
-    with open(history_file, "w", encoding="utf-8") as f:
-        for u, b in zip(history_user, history_bot):
-            f.write(f"Toi : {u}\n")
-            f.write(f"Chatbot : {b}\n")
-        if len(history_user) > len(history_bot):
-            f.write(f"Toi : {history_user[-1]}\n")
+        output_ids = self.model.generate(
+            input_ids,
+            attention_mask=input_ids.new_ones(input_ids.shape),
+            max_new_tokens=self.max_new_tokens,
+            pad_token_id=self.tokenizer.eos_token_id,
+            do_sample=True,
+            no_repeat_ngram_size=3,
+            top_k=100,
+            top_p=0.7,
+            temperature=0.8
+        )
+
+        response = self.tokenizer.decode(
+            output_ids[0, input_ids.shape[-1]:],
+            skip_special_tokens=True
+        ).strip() or "..."
+
+        self._add_exchange(user_input, response, kind="chat")
+        return response

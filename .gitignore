@@ -1,5 +1,15 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
+.env
+
+# Historique de conversation (données personnelles)
+chat_history.json
+chat_history.txt
+
+# Générés localement (python utils/build_knowledge.py)
 data/knowledge/*.json
-data/lora_finetuned
+
+# Poids LoRA issus de l essai de fine-tuning
+data/lora_finetuned/

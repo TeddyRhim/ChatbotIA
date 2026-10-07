@@ -1,42 +1,44 @@
 # Chatbot IA - DialoGPT / ChatbotIA personnalisé
 
-Un chatbot Python basé sur **DialoGPT-medium** (ou GPT-2 pour tests LoRA), avec historique, mémoire partielle et possibilité de spécialisation via fine-tuning léger.  
-Ce projet est conçu pour évoluer, en intégrant à la fois des fonctionnalités interactives et des mécanismes de personnalisation sur mesure, tout en exploitant un **knowledge base** statique pour guider les réponses.
-* Le fine-tuning n’a pas pu être conclu en raison d’un dataset trop limité. Étant donné que l’utilisation reste personnelle, je ne cherche pas encore à enrichir les données.
-* Par défaut, les fichiers de HuggingFace sont stockés dans le dossier standard. Dans ce projet, j’ai redirigé le cache vers D:\huggingface_cache à cause d’un manque de place :
-* os.environ["HF_HOME"] = r"D:\huggingface_cache" (vous pouvez supprimer cette ligne de finetune_lora.py (ligne 10))
+Un chatbot Python basé sur **DialoGPT-medium**, avec historique de conversation et recherche dans une **base de connaissances** (un univers de jeu de rôle inventé). Une expérience de fine-tuning LoRA (GPT-2) est conservée dans `legacy/`.
 
+> Le projet évolue vers un chatbot RAG 100 % local : voir [Futur du projet](#futur-du-projet--pivot-vers-un-chatbot-rag-100--local).
 
-Si vous n’avez pas ce problème, vous pouvez supprimer cette ligne pour éviter de disperser vos données.
+* Le fine-tuning n’a pas pu être conclu (dataset trop limité, modèle inadapté au français).
+* Les scripts de `legacy/` redirigent le cache HuggingFace vers `D:\huggingface_cache` (manque de place sur C:). Supprimez la ligne `os.environ["HF_HOME"]` de `legacy/finetune_lora.py` si vous n'en avez pas besoin.
+
 ---
 
 ## Fonctionnalités principales
 
-- Chat en temps réel dans le terminal
-- Sauvegarde automatique de l’historique (`chat_history.txt`)
-- Mode **continue** pour reprendre une conversation
-- Recherche dans l’historique (`/search <mot-clé>`)
-- Recherche dans un **knowledge.json** contenant des informations sur l’univers
-- Commandes utiles : `/help`, `/quit`, `/continue`, `/clear`
-- Tentative de fine-tuning léger via LoRA pour spécialisation sur un univers
-- Préparation automatisée d’une base de connaissance pour un apprentissage futur
+- Chat en temps réel dans le terminal (`console_chat.py`) ou dans une interface web Streamlit (`interface.py`)
+- Historique sauvegardé automatiquement (`chat_history.json`, ignoré par git) et repris au lancement
+- Contexte des derniers échanges transmis au modèle
+- `search <mots>` : recherche dans la base de connaissances (tous les mots doivent apparaître, accents et casse ignorés), puis dans l’historique
+- Commandes du terminal : `search`, `reset`, `quit`
+- Tests unitaires de la recherche et de la construction de la base (`tests/`)
 
 ---
 
 ## Organisation des fichiers
 
-- `main.py` : Point d’entrée du chatbot. Utilise le `knowledge.json` pour répondre aux questions via un moteur de recherche simple.
-- `data/knowledge/knowledge.json` : Base de connaissances structurée.
-- `utils/finetune_lora.py` : Tentative de fine-tuning LoRA pour entraîner le modèle sur le knowledge.
-- `utils/test_lora.py` : Script de test pour le modèle LoRA fine-tuné.
-- `chat_history.txt` : Sauvegarde des conversations.
+- `main.py` : classe `Chatbot` (modèle, historique, recherche, génération).
+- `console_chat.py` / `interface.py` : interfaces terminal et web.
+- `knowledge.py` : chargement et recherche dans la base de connaissances.
+- `data/data_raw/data_raw.txt` : notes brutes de l’univers (source de vérité).
+- `data/knowledge/knowledge.json` : base générée par `utils/build_knowledge.py` (non versionnée).
+- `tests/` : tests unitaires (`python -m unittest discover -s tests -t .`).
+- `legacy/` : tentative de fine-tuning LoRA (`finetune_lora.py`, `test_lora.py`).
 
 ---
 
 ## Knowledge Base
 
-- **Format JSON** : `"prompt"` / `"response"`  
-- Exemple d’entrée :
+Générée à partir de `data_raw.txt` : une ligne en MAJUSCULES ouvre une section, une autre ligne isolée ouvre une sous-section, chaque ligne `-` est un fragment.
+
+```json
+{"section": "PERSONNAGES & CONNEXIONS", "subsection": "Guenaudes", "text": "Morgana la Guenaude"}
+```
 
 ---
 
@@ -57,7 +59,7 @@ Si vous n’avez pas ce problème, vous pouvez supprimer cette ligne pour évite
 
 ### **Étape 4 : Fine-tuning**
 - [x] Préparer `knowledge_dataset.json` pour le fine-tuning
-- [x] Script `build_knowledge.py` pour transformer le knowledge en dataset OpenAI
+- [x] Script de construction du dataset de fine-tuning (supprimé ensuite, voir `legacy/`)
 - [x] Choisir un modèle de base pour fine-tuning (GTP2)
 - [x] Entraînement avec LoRA / PEFT
 - [-] Tester le modèle fine-tuné avec `main.py`
@@ -70,38 +72,61 @@ Si vous n’avez pas ce problème, vous pouvez supprimer cette ligne pour évite
 
 ---
 
+## Futur du projet : pivot vers un chatbot RAG 100 % local
+
+**Bilan de la première version.** DialoGPT / GPT-2 sont des modèles de 2019-2020, surtout anglophones : leurs réponses restent incohérentes, et le fine-tuning LoRA n'a pas pu aboutir (48 exemples seulement, modèle inadapté au français, PyTorch installé en version CPU alors que la machine dispose d'une GTX 1070). Le fine-tuning n'est de toute façon plus la bonne approche pour « faire connaître » un univers à un modèle.
+
+**Nouvelle direction : RAG (Retrieval-Augmented Generation).** Au lieu d'entraîner le modèle, on lui fournit à chaque question les passages pertinents de la base de connaissances. Modifier le contenu met le bot à jour immédiatement, sans réentraînement.
+
+Objectifs, tout en local et gratuit :
+
+1. **Modèle de génération** : remplacer DialoGPT par un LLM récent (Qwen2.5 7B ou équivalent, en 4 bits) servi par [Ollama](https://ollama.com).
+2. **Base vectorielle** : découper les documents, calculer des embeddings multilingues (`multilingual-e5-small` ou `bge-m3`) et les stocker dans ChromaDB, à la place de la recherche par mot-clé de `knowledge.py`.
+3. **Sources citées** : réponses fondées uniquement sur les passages retrouvés, avec références `[1]`, `[2]`, et un « je ne sais pas » quand rien de pertinent n'est trouvé.
+4. **Évaluation** : jeu de 30 à 50 questions avec réponses attendues, mesure du retrieval (hit rate, MRR) et de la fidélité des réponses, pour comparer les configurations avec des chiffres.
+5. **Interface** : conserver Streamlit (`interface.py`) en affichant les sources sous chaque réponse.
+
+Ce qui est conservé : l'historique de conversation, la base `knowledge.json` (comme premier corpus) et l'interface web. Le code LoRA reste dans `utils/` comme trace de l'expérimentation.
+
+Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
+
+---
+
 ## Installation
 
 1. Cloner le dépôt :
 ```bash
-git clone git@github.com:ton-utilisateurChatbotIA
-cd ton-depot
+git clone https://github.com/TeddyRhim/ChatbotIA.git
+cd ChatbotIA
+```
 
-Environnement vituel + activation :
-
+2. Environnement virtuel + activation :
+```bash
 python -m venv venv
 source venv/bin/activate  # Linux / macOS
 venv\Scripts\activate     # Windows
+```
 
-Installation des dépendances :
-
+3. Installation des dépendances :
+```bash
 pip install -r requirements.txt
+```
 
-Lancement du chat bot (pour le moment) :
+4. Génération de la base de connaissances :
+```bash
+python utils/build_knowledge.py
+```
 
-python chatbot.py
-Commandes disponibles :
+5. Lancement (version actuelle, DialoGPT) :
+```bash
+python console_chat.py        # chat dans le terminal
+streamlit run interface.py    # interface web
+```
 
-/help → liste des commandes
-/search <mot> → recherche dans l’historique
-/continue → reprendre la dernière conversation
-/clear → vider l’historique
-/quit → quitter le chat
+Commandes du chat terminal :
 
-
----
-
-
-Multi-utilisateur, profils, export du modèle fine-tuné
+- `search <mot>` → recherche dans l'historique puis dans le knowledge
+- `reset` → vider l'historique
+- `quit` → quitter
 
 
