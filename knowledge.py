@@ -1,4 +1,5 @@
 import json
+import re
 import unicodedata
 from pathlib import Path
 
@@ -33,6 +34,36 @@ def search_knowledge(user_query, knowledge, limit=5):
         if all(word in haystack for word in words):
             results.append(fragment)
     return results[:limit]
+
+
+STOPWORDS = {
+    "les", "des", "une", "est", "que", "qui", "quoi", "quel", "quels", "quelle", "quelles",
+    "dans", "pour", "par", "sur", "avec", "sans", "sont", "ont", "aux", "du", "de", "la", "le",
+    "un", "et", "ou", "en", "au", "ce", "ces", "cet", "cette", "il", "elle", "ils", "elles",
+    "on", "se", "sa", "son", "ses", "mon", "ma", "mes", "ton", "ta", "tes", "pas", "plus",
+    "comment", "pourquoi", "qu", "sais", "sait", "parle", "dis", "moi", "tu", "je", "nous",
+}
+
+
+def _stems(text):
+    """Mots normalisés réduits à leurs 5 premières lettres (tolère pluriels et conjugaisons)."""
+    return {w[:5] for w in re.findall(r"\w+", normalize_text(text)) if len(w) > 2 and w not in STOPWORDS}
+
+
+def retrieve(question, knowledge, k=5):
+    """Fragments les plus proches d'une question en langage naturel, classés par nombre de mots communs.
+
+    Version provisoire par mots-clés : elle sera remplacée par une recherche par embeddings.
+    """
+    query = _stems(question)
+    scored = []
+    for fragment in knowledge:
+        text = " ".join([fragment["section"], fragment.get("subsection", ""), fragment["text"]])
+        score = len(query & _stems(text))
+        if score:
+            scored.append((score, fragment))
+    scored.sort(key=lambda pair: -pair[0])
+    return [fragment for _, fragment in scored[:k]]
 
 
 def format_fragment(fragment):

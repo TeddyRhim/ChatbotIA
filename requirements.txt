@@ -1,8 +1,10 @@
-# Dépendances directes (versions testées avec Python 3.11)
+# Application (Python 3.11)
+ollama==0.6.3
+streamlit==1.51.0
+
+# Uniquement pour l'expérience de fine-tuning (dossier legacy/)
 transformers==4.57.1
 torch==2.9.0
-streamlit==1.51.0
-# Uniquement pour l'expérience de fine-tuning (dossier legacy/)
 peft==0.17.1
 datasets==4.4.1
 accelerate==1.11.0

@@ -1,23 +1,26 @@
 import json
 import os
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import ollama
 
-from knowledge import load_knowledge, search_knowledge, format_fragment
+from knowledge import load_knowledge, search_knowledge, retrieve, format_fragment
+
+SYSTEM_PROMPT = """Tu es l'assistant d'un univers de jeu de rôle. Réponds toujours en français, de façon concise.
+Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis et cite ceux que tu utilises avec [1], [2]...
+Si les extraits ne contiennent pas la réponse, dis que tu ne sais pas : n'invente rien.
+Pour une simple conversation (salutations, remerciements), réponds naturellement."""
 
 
 class Chatbot:
-    def __init__(self, model_name="microsoft/DialoGPT-medium",
+    def __init__(self, model="qwen2.5:7b",
                  history_file="chat_history.json",
-                 max_new_tokens=100,
-                 context_turns=3):
+                 context_turns=3,
+                 top_k=5):
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-
+        self.model = model
         self.history_file = history_file
-        self.max_new_tokens = max_new_tokens
         self.context_turns = context_turns
+        self.top_k = top_k
 
         self.knowledge_list = load_knowledge()
 
@@ -81,35 +84,46 @@ class Chatbot:
         return bot_msg
 
 
-    def _build_prompt_ids(self, user_input):
-        """Derniers échanges de chat + nouvelle question, séparés par le token de fin (format DialoGPT)."""
+    def _build_messages(self, user_input, fragments):
         chat = [m for m in self.history if m["kind"] == "chat"]
         recent = chat[-2 * self.context_turns:]
-        text = "".join(m["content"] + self.tokenizer.eos_token for m in recent)
-        text += user_input + self.tokenizer.eos_token
-        input_ids = self.tokenizer.encode(text, return_tensors="pt")
-        return input_ids[:, -800:]  # DialoGPT accepte 1024 tokens, on garde de la place pour la réponse
+
+        if fragments:
+            extracts = "\n".join(f"[{i}] {format_fragment(f)}" for i, f in enumerate(fragments, 1))
+        else:
+            extracts = "(aucun extrait pertinent)"
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages += [
+            {"role": "user" if m["role"] == "user" else "assistant",
+             "content": m["content"].split("\n\nSources :\n")[0]}
+            for m in recent
+        ]
+        messages.append({
+            "role": "user",
+            "content": f"Extraits de la base de connaissances :\n{extracts}\n\nQuestion : {user_input}",
+        })
+        return messages
 
 
     def generate_response(self, user_input):
-        input_ids = self._build_prompt_ids(user_input)
+        fragments = retrieve(user_input, self.knowledge_list, k=self.top_k)
 
-        output_ids = self.model.generate(
-            input_ids,
-            attention_mask=input_ids.new_ones(input_ids.shape),
-            max_new_tokens=self.max_new_tokens,
-            pad_token_id=self.tokenizer.eos_token_id,
-            do_sample=True,
-            no_repeat_ngram_size=3,
-            top_k=100,
-            top_p=0.7,
-            temperature=0.8
-        )
+        try:
+            reply = ollama.chat(
+                model=self.model,
+                messages=self._build_messages(user_input, fragments),
+                options={"temperature": 0.3},
+            )
+        except (ConnectionError, ollama.ResponseError) as e:
+            return f"Erreur Ollama ({e}). Le serveur est-il lancé et le modèle « {self.model} » téléchargé ?"
 
-        response = self.tokenizer.decode(
-            output_ids[0, input_ids.shape[-1]:],
-            skip_special_tokens=True
-        ).strip() or "..."
+        response = reply["message"]["content"].strip() or "..."
+
+        if fragments:
+            response += "\n\nSources :\n" + "\n".join(
+                f"[{i}] {format_fragment(f)}" for i, f in enumerate(fragments, 1)
+            )
 
         self._add_exchange(user_input, response, kind="chat")
         return response

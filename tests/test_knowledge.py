@@ -1,6 +1,6 @@
 import unittest
 
-from knowledge import load_knowledge, normalize_text, search_knowledge
+from knowledge import load_knowledge, normalize_text, retrieve, search_knowledge
 from utils.build_knowledge import RAW_PATH, parse_raw
 
 SAMPLE = """\
@@ -52,6 +52,26 @@ class SearchTest(unittest.TestCase):
     def test_matches_subsection_and_empty_query(self):
         self.assertEqual(len(search_knowledge("personnages lavitz", self.knowledge)), 1)
         self.assertEqual(search_knowledge("   ", self.knowledge), [])
+
+
+class RetrieveTest(unittest.TestCase):
+    def setUp(self):
+        self.knowledge = [
+            {"section": "VILLAGE", "text": "Le moulin est sûrement la solution"},
+            {"section": "PERSONNAGES", "subsection": "Lavitz", "text": "Sœur de Lavitz gravement malade"},
+            {"section": "LIEUX", "text": "Taverne : Welbone"},
+        ]
+
+    def test_natural_question_finds_relevant_fragment(self):
+        result = retrieve("Qui est malade dans la famille de Lavitz ?", self.knowledge)
+        self.assertEqual(result[0]["text"], "Sœur de Lavitz gravement malade")
+
+    def test_ranks_by_shared_words_and_ignores_stopwords(self):
+        result = retrieve("Que sait-on du moulin et de Lavitz malade ?", self.knowledge)
+        self.assertEqual([f["section"] for f in result], ["PERSONNAGES", "VILLAGE"])
+
+    def test_nothing_relevant_gives_empty_list(self):
+        self.assertEqual(retrieve("Parle-moi des dragons", self.knowledge), [])
 
 
 class LoadKnowledgeTest(unittest.TestCase):
