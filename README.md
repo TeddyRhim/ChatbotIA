@@ -7,6 +7,20 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 * Le fine-tuning n’a pas pu être conclu (dataset trop limité, modèle inadapté au français).
 * Les scripts de `legacy/` redirigent le cache HuggingFace vers `D:\huggingface_cache` (manque de place sur C:). Supprimez la ligne `os.environ["HF_HOME"]` de `legacy/finetune_lora.py` si vous n'en avez pas besoin.
 
+## Aperçu
+
+Captures de l'interface web (Streamlit) sur l'univers fictif d'exemple `data/sample_lore/` : une réponse prudente avec sa source quand les notes ne sont pas certaines, et un « je ne sais pas » quand l'information n'existe pas.
+
+| Question sur une hypothèse | Sources citées, puis abstention |
+| --- | --- |
+| ![Question sur une hypothèse](docs/screenshots/chat-1.jpg) | ![Sources citées et je ne sais pas](docs/screenshots/chat-2.jpg) |
+
+## En bref
+
+- **RAG 100 % local** : Qwen2.5 7B via Ollama, embeddings `multilingual-e5-small` dans ChromaDB, recherche hybride mots-clés et sens, liens entre fiches.
+- **Mesuré** : récupération (hit@6 = 96 % en hybride sur 25 questions) et réponses (53 questions, notation déterministe) ; détails et limites dans [Évaluation des réponses](#évaluation-des-réponses).
+- **Honnête sur ses limites** : jeu de test petit, écarts entre configurations modestes, fine-tuning LoRA abandonné (conservé dans `legacy/`).
+
 ---
 
 ## Fonctionnalités principales
@@ -78,7 +92,7 @@ statut: alliée
 - [-] Tester le modèle fine-tuné avec `main.py`
 
 ### **Étape 5 : Améliorations futures**
-- [ ] Intégrer une interface web / GUI
+- [x] Intégrer une interface web / GUI (Streamlit, `interface.py`)
 - [-] Ajouter des suggestions dynamiques du bot basées sur les connexions entre personnages, lieux, objets
 - [ ] Gestion automatique des mises à jour du knowledge
 - [?] Possibilité de mise à jour via le bot (ajouter du knowledge en live)
