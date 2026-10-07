@@ -50,27 +50,37 @@ def _stems(text):
     return {w[:5] for w in re.findall(r"\w+", normalize_text(text)) if len(w) > 2 and w not in STOPWORDS}
 
 
-def retrieve(question, knowledge, k=5):
-    """Fragments les plus proches d'une question en langage naturel, classés par nombre de mots communs.
+NAME_BONUS = 3
 
+
+def retrieve(question, knowledge, k=5):
+    """Fiches les plus proches d'une question en langage naturel.
+
+    Score = mots communs avec la fiche + NAME_BONUS par mot commun avec son nom ou ses alias.
     Version provisoire par mots-clés : elle sera remplacée par une recherche par embeddings.
     """
     query = _stems(question)
     scored = []
     for fragment in knowledge:
         text = " ".join([fragment["section"], fragment.get("subsection", ""), fragment["text"]])
-        score = len(query & _stems(text))
+        names = " ".join([fragment.get("subsection", "")] + fragment.get("aliases", []))
+        score = len(query & _stems(text)) + NAME_BONUS * len(query & _stems(names))
         if score:
             scored.append((score, fragment))
     scored.sort(key=lambda pair: -pair[0])
     return [fragment for _, fragment in scored[:k]]
 
 
-def format_fragment(fragment):
+def format_label(fragment):
+    """Étiquette courte d'une fiche, pour afficher les sources."""
     label = fragment["section"]
     if fragment.get("subsection"):
         label += f" > {fragment['subsection']}"
-    return f"[{label}] {fragment['text']}"
+    return f"[{label}]"
+
+
+def format_fragment(fragment):
+    return f"{format_label(fragment)} {fragment['text']}"
 
 
 if __name__ == "__main__":

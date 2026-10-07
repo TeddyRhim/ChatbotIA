@@ -26,20 +26,29 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 - `main.py` : classe `Chatbot` (Ollama, historique, récupération des extraits, génération).
 - `console_chat.py` / `interface.py` : interfaces terminal et web.
 - `knowledge.py` : chargement et recherche dans la base de connaissances.
-- `data/data_raw/data_raw.txt` : notes brutes de l’univers (source de vérité).
+- `data/lore/` : fiches de l'univers (privé) ; `data/sample_lore/` : exemple public ; `data/data_raw/` : notes brutes (privé).
 - `data/knowledge/knowledge.json` : base générée par `utils/build_knowledge.py` (non versionnée).
 - `tests/` : tests unitaires (`python -m unittest discover -s tests -t .`).
 - `legacy/` : tentative de fine-tuning LoRA (`finetune_lora.py`, `test_lora.py`).
 
 ---
 
-## Knowledge Base
+## Knowledge Base : des fiches, pas des puces
 
-Générée à partir de `data_raw.txt` : une ligne en MAJUSCULES ouvre une section, une autre ligne isolée ouvre une sous-section, chaque ligne `-` est un fragment.
+Les notes brutes sont transformées en **fiches** (une par personnage, lieu, objet, quête...), chacune avec un nom, des alias (orthographes variantes) et des faits. Les suppositions du joueur sont marquées `(hypothèse)`, `(théorie)` ou `(à confirmer)` pour que le chatbot ne les présente pas comme des faits.
 
-```json
-{"section": "PERSONNAGES & CONNEXIONS", "subsection": "Guenaudes", "text": "Morgana la Guenaude"}
+```markdown
+# Elowen Brindelune
+alias: Elowen, la Gardienne
+statut: alliée
+- Gardienne de la tour de Vélan.
+- (hypothèse) Elle serait la sœur disparue du roi Maren.
 ```
+
+- `data/sample_lore/` : univers fictif d'exemple, versionné, utilisé par défaut (et par les tests).
+- `data/lore/` et `data/data_raw/` : **données privées** (notes de campagne et fiches), ignorées par git. Ordre de choix : variable `LORE_DIR` si définie, sinon `data/lore/` s'il contient des fiches, sinon l'exemple.
+- `utils/build_knowledge.py` transforme les fiches en `data/knowledge/knowledge.json`.
+- Les fichiers `_*.md` (ex. `_a_clarifier.md`) sont des notes de travail, ignorées par la construction.
 
 ---
 
@@ -113,7 +122,7 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-4. Génération de la base de connaissances :
+4. Génération de la base de connaissances (à partir de `data/lore/` si présent, sinon de l'exemple `data/sample_lore/`) :
 ```bash
 python utils/build_knowledge.py
 ```

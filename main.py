@@ -3,10 +3,11 @@ import os
 
 import ollama
 
-from knowledge import load_knowledge, search_knowledge, retrieve, format_fragment
+from knowledge import load_knowledge, search_knowledge, retrieve, format_fragment, format_label
 
-SYSTEM_PROMPT = """Tu es l'assistant d'un univers de jeu de rôle. Réponds toujours en français, de façon concise.
+SYSTEM_PROMPT = """Tu es l'assistant de campagne d'un joueur de jeu de rôle : tu l'aides à retrouver ce que ses notes disent. Réponds toujours en français, de façon concise.
 Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis et cite ceux que tu utilises avec [1], [2]...
+Distingue les faits des suppositions : ce qui est marqué (hypothèse), (théorie) ou (à confirmer) n'est PAS un fait établi, dis-le explicitement.
 Si les extraits ne contiennent pas la réponse, dis que tu ne sais pas : n'invente rien.
 Pour une simple conversation (salutations, remerciements), réponds naturellement."""
 
@@ -15,7 +16,7 @@ class Chatbot:
     def __init__(self, model="qwen2.5:7b",
                  history_file="chat_history.json",
                  context_turns=3,
-                 top_k=5):
+                 top_k=6):
 
         self.model = model
         self.history_file = history_file
@@ -113,7 +114,7 @@ class Chatbot:
             reply = ollama.chat(
                 model=self.model,
                 messages=self._build_messages(user_input, fragments),
-                options={"temperature": 0.3},
+                options={"temperature": 0.3, "num_ctx": 6144},
             )
         except (ConnectionError, ollama.ResponseError) as e:
             return f"Erreur Ollama ({e}). Le serveur est-il lancé et le modèle « {self.model} » téléchargé ?"
@@ -122,7 +123,7 @@ class Chatbot:
 
         if fragments:
             response += "\n\nSources :\n" + "\n".join(
-                f"[{i}] {format_fragment(f)}" for i, f in enumerate(fragments, 1)
+                f"[{i}] {format_label(f)}" for i, f in enumerate(fragments, 1)
             )
 
         self._add_exchange(user_input, response, kind="chat")

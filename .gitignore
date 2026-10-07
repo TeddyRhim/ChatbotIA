@@ -4,6 +4,10 @@ __pycache__/
 *.pyc
 .env
 
+# DONNÉES PRIVÉES : notes de campagne et fiches dérivées (ne jamais versionner)
+data/data_raw/
+data/lore/
+
 # Historique de conversation (données personnelles)
 chat_history.json
 chat_history.txt
