@@ -107,7 +107,24 @@ Résultats actuels de la récupération (25 questions de test, 156 fiches) : hit
 
 **Mode `piste`** : le raisonnement est *calculé* par le graphe (paires de fiches non liées mais qui partagent des voisines), le LLM local (7B) ne fait que formuler. Chaque piste est une hypothèse, doit citer ses fiches (sinon elle est signalée ⚠) et se termine par une vérification à faire auprès du MJ. Limite connue : un modèle 7B produit parfois des pistes vagues ou répète ce que les notes disent déjà ; ce sont des points de départ, pas des déductions.
 
-À venir : évaluation de la qualité des réponses et agrandissement du jeu de test.
+### Évaluation des réponses
+
+`python eval/eval_answers.py` pose 35 questions (24 sur des faits, 5 sans réponse dans les notes, 6 où les notes sont contradictoires ou hypothétiques) à quatre configurations. La notation est déterministe, sans modèle juge : faits attendus présents, **faits retrouvés dans les fiches réellement citées**, abstention quand les notes ne disent rien, réserve quand les notes sont incertaines, et **aucun nom propre absent des fiches** fournies.
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Noms inventés / réponse | s / réponse |
+|---|---|---|---|---|---|---|---|
+| LLM seul (sans notes) | 0 % | 40 % | 0 % | 66 % | 6 % | 2,09 | 5,7 |
+| Mots-clés | 75 % | 80 % | 83 % | 100 % | 77 % | 0,00 | 3,5 |
+| Hybride | 79 % | 100 % | 67 % | 97 % | 80 % | 0,03 | 3,2 |
+| **Hybride + liens** | **88 %** | **100 %** | 67 % | **100 %** | **86 %** | **0,00** | 3,9 |
+
+Lecture honnête :
+- Le modèle seul ne connaît évidemment pas la campagne : 0 % de faits, et il invente en moyenne 2 noms propres par réponse. Le gain du RAG est net.
+- Entre les trois configurations RAG, l'écart (77 → 86 %) est de l'ordre de 3 questions sur 35, avec une seule passe à température 0,3 : **trop petit pour conclure** (`--repeat` permet de moyenner).
+- Les échecs restants viennent surtout de la **citation** (le modèle répond juste mais ne cite pas la bonne fiche) et de **notes contradictoires non signalées dans la fiche** (gemme de lune : le modèle choisit une version au lieu de signaler la contradiction).
+- La notation a un faux négatif corrigé après coup (« doit être confirmée » non reconnu comme une réserve) ; les chiffres ci-dessus sont ceux de la mesure avant correction.
+
+À venir : annoter les contradictions dans les fiches, forcer la citation, agrandir le jeu de test.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

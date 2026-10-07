@@ -24,7 +24,7 @@ ABSTENTION_MARKERS = [
 ]
 
 UNCERTAINTY_MARKERS = [
-    "hypothes", "theorie", "incertain", "a confirmer", "contradict", "contredi", "pas de consensus", "ambigu",
+    "hypothes", "theorie", "incertain", "a confirmer", "contradict", "contredi", "etre confirm", "pas de consensus", "ambigu",
     "pas confirme", "suppos", "ne le sait pas", "pas clair", "pas certain", "pas etabli", "pas un fait",
     "peut-etre", "pas sur", "selon une note", "controvers", "pas tranch", "discordan", "divergen",
     "reste a clarifier", "a clarifier", "plusieurs versions",

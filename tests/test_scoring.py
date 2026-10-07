@@ -29,6 +29,7 @@ class MarkersTest(unittest.TestCase):
     def test_uncertainty(self):
         self.assertTrue(flags_uncertainty("C'est une théorie du joueur, pas un fait."))
         self.assertTrue(flags_uncertainty("Les notes se contredisent à ce sujet."))
+        self.assertTrue(flags_uncertainty("Cette information doit être confirmée."))
         self.assertFalse(flags_uncertainty("Elowen est la sœur du roi."))
 
 
