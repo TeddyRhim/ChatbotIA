@@ -67,6 +67,9 @@ class CitationTest(unittest.TestCase):
     def test_cited_numbers_in_order_without_duplicates(self):
         self.assertEqual(cited_numbers("a [2] b [1] c [2]"), [2, 1])
 
+    def test_grouped_citations_are_read(self):
+        self.assertEqual(cited_numbers("a [1, 8] b [3][1] c [4; 5]"), [1, 8, 3, 4, 5])
+
     def test_sources_only_list_cited_fiches(self):
         out = Chatbot._with_sources("Réponse [2].", KNOWLEDGE[:3])
         self.assertIn("[2] [PERSONNAGES > Maren]", out)

@@ -133,9 +133,18 @@ Lecture honnête :
 
 \* Après coup, j'ai ajouté à la notation des formules de réserve légitimes qu'elle ne reconnaissait pas (« probablement pas », « à vérifier », « n'a pas encore été demandée ») et recalculé sur les réponses déjà obtenues. Ce n'est pas une nouvelle mesure.
 
-Limites connues : le filet n'ajoute une citation que lorsqu'il n'y en a aucune, il ne corrige pas une citation vers la mauvaise fiche (« l'année actuelle » citée vers le journal au lieu de la fiche Barovie) ; les réponses très courtes ne sont pas rattachées ; l'écart entre hybride et hybride + liens (2 points) reste dans le bruit.
+**Après vérification des citations** (`fix_citations` : une citation qui pointe vers une fiche ne contenant pas ce que dit le morceau de phrase est remplacée par la fiche qui le contient ; lecture des citations groupées `[1, 8]` corrigée ; mêmes 53 questions, 2 passages) :
 
-À venir : vérifier les citations existantes (pas seulement les ajouter), agrandir le jeu de test.
+| Configuration | Faits justes | Incertitude | Ancrage | Global |
+|---|---|---|---|---|
+| Hybride | 91 % | 60 % | 97 % | 90 % |
+| **Hybride + liens** | **95 %** | **90 %** | **100 %** | **95 %** |
+
+Deux changements ont été faits en même temps (correction des citations et lecture des citations groupées) : leur part respective dans le gain n'est pas mesurée.
+
+Limites connues : les réponses très courtes (« Le Rouge l'a emparé. ») ne sont pas rattachées à une fiche ; une réponse peut omettre son sujet ; une théorie de joueur n'est pas toujours présentée comme telle ; l'écart entre configurations reste modeste sur un petit jeu de test.
+
+À venir : agrandir le jeu de test.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

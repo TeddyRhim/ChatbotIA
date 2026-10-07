@@ -1,6 +1,6 @@
 import unittest
 
-from knowledge import ensure_citations, load_knowledge, normalize_text, retrieve, search_knowledge
+from knowledge import ensure_citations, fix_citations, load_knowledge, normalize_text, retrieve, search_knowledge
 from retrieval import HybridRetriever, fuse_rankings
 from utils.build_knowledge import SAMPLE_LORE, build, parse_fiches
 
@@ -136,6 +136,48 @@ class EnsureCitationsTest(unittest.TestCase):
 
     def test_no_fragments_changes_nothing(self):
         self.assertEqual(ensure_citations("Kasimir est un elfe.", []), "Kasimir est un elfe.")
+
+
+class FixCitationsTest(unittest.TestCase):
+    FRAGMENTS = [
+        {"section": "LIEUX", "subsection": "Barovie", "aliases": [],
+         "text": "Faits : Année actuelle : 1641 ; la lune est visible derrière les nuages"},
+        {"section": "JOURNAL", "subsection": "Arc 5", "aliases": [],
+         "text": "Faits : Deux mois de préparation, Ireena dans le coma au 5e bastion"},
+        {"section": "PERSONNAGES", "subsection": "Kasimir", "aliases": [],
+         "text": "Faits : Elfe du crépuscule, frère de Katrina, sert maintenant Strahd"},
+    ]
+
+    def test_wrong_fiche_is_replaced_by_the_one_that_contains_the_fact(self):
+        self.assertEqual(fix_citations("L'année actuelle est 1641 [2].", self.FRAGMENTS),
+                         "L'année actuelle est 1641 [1].")
+
+    def test_correct_citation_is_untouched(self):
+        text = "L'année actuelle est 1641 [1]."
+        self.assertEqual(fix_citations(text, self.FRAGMENTS), text)
+
+    def test_one_supporting_number_in_a_group_keeps_the_group(self):
+        text = "L'année actuelle est 1641 [1, 2]."
+        self.assertEqual(fix_citations(text, self.FRAGMENTS), text)
+
+    def test_each_clause_is_checked_separately(self):
+        text = "Kasimir est un elfe du crépuscule [3], et l'année actuelle est 1641 [3]."
+        self.assertEqual(fix_citations(text, self.FRAGMENTS),
+                         "Kasimir est un elfe du crépuscule [3], et l'année actuelle est 1641 [1].")
+
+    def test_out_of_range_number_is_fixed_when_a_fiche_clearly_supports_it(self):
+        self.assertEqual(fix_citations("L'année actuelle est 1641 [9].", self.FRAGMENTS),
+                         "L'année actuelle est 1641 [1].")
+
+    def test_no_better_fiche_or_short_clause_is_untouched(self):
+        for text in ("Le chat de Silvaréth s'appelle Moustache et vit au nord [1].",  # aucune fiche ne le dit
+                     "Oui [2]."):                                                      # trop court
+            self.assertEqual(fix_citations(text, self.FRAGMENTS), text)
+
+    def test_ensure_citations_fixes_then_adds(self):
+        text = "L'année actuelle est 1641 [2]. Kasimir est un elfe du crépuscule et frère de Katrina."
+        self.assertEqual(ensure_citations(text, self.FRAGMENTS),
+                         "L'année actuelle est 1641 [1]. Kasimir est un elfe du crépuscule et frère de Katrina. [3]")
 
 
 class LoadKnowledgeTest(unittest.TestCase):

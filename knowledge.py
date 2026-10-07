@@ -72,11 +72,12 @@ def retrieve(question, knowledge, k=5):
 
 
 def cited_numbers(text):
-    """Numéros [n] cités dans une réponse, dans l'ordre d'apparition, sans doublon."""
+    """Numéros cités dans une réponse ([2], [1, 7], [1][4]), dans l'ordre d'apparition, sans doublon."""
     seen = []
-    for n in re.findall(r"\[(\d+)\]", text):
-        if int(n) not in seen:
-            seen.append(int(n))
+    for group in re.findall(r"\[(\d+(?:\s*[,;]\s*\d+)*)\]", text):
+        for n in re.findall(r"\d+", group):
+            if int(n) not in seen:
+                seen.append(int(n))
     return seen
 
 
@@ -87,17 +88,61 @@ CITE_MIN_STEMS = 3      # une phrase plus courte n'est pas assez précise pour �
 CITE_MIN_OVERLAP = 0.5  # part des mots de la phrase que la fiche doit contenir
 
 
-def ensure_citations(response, fragments):
-    """Ajoute [n] aux phrases sans citation quand une fiche les contient clairement.
+def _fragment_stems(fragments):
+    return [_stems(f"{f.get('subsection', '')} {' '.join(f.get('aliases', []))} {f['text']}") for f in fragments]
 
-    Filet de sécurité quand le modèle oublie de citer : chaque phrase est rattachée à la fiche qui
-    partage le plus de ses mots (au moins la moitié). Les phrases déjà citées, trop courtes ou
-    sans fiche convaincante restent telles quelles.
+
+def _best_fragment(stems, fragment_stems):
+    """(index, part des mots de `stems` que la fiche contient) pour la fiche la plus proche."""
+    overlaps = [len(stems & s) / len(stems) for s in fragment_stems]
+    best = max(range(len(overlaps)), key=overlaps.__getitem__)
+    return best, overlaps
+
+
+def fix_citations(response, fragments):
+    """Corrige les citations [n] qui pointent vers une fiche ne contenant pas ce que dit la phrase.
+
+    Chaque citation clôt un morceau de phrase (« Kasimir est elfe [4], frère de Katrina [1] ») : on
+    compare ce morceau aux fiches citées. Si aucune ne le contient à moitié et qu'une autre fiche le
+    contient clairement, on remplace par celle-ci. Une citation correcte, ou sans meilleure fiche, n'est
+    jamais modifiée.
     """
     if not fragments:
         return response
-    fragment_stems = [_stems(f"{f.get('subsection', '')} {' '.join(f.get('aliases', []))} {f['text']}")
-                      for f in fragments]
+    fragment_stems = _fragment_stems(fragments)
+    lines = []
+    for line in response.split("\n"):
+        out, last = [], 0
+        for match in CITATION.finditer(line):
+            clause = line[last:match.start()]
+            out.append(clause)
+            token = match.group(0)
+            pieces = [p for p in SENTENCE_END.split(clause.strip()) if p.strip()]
+            stems = _stems(pieces[-1]) if pieces else set()
+            if len(stems) >= CITE_MIN_STEMS:
+                best, overlaps = _best_fragment(stems, fragment_stems)
+                cited = [int(n) - 1 for n in re.findall(r"\d+", token) if 1 <= int(n) <= len(fragments)]
+                cited_support = max((overlaps[i] for i in cited), default=0)
+                if cited_support < CITE_MIN_OVERLAP <= overlaps[best] and best not in cited:
+                    token = f"[{best + 1}]"
+            out.append(token)
+            last = match.end()
+        out.append(line[last:])
+        lines.append("".join(out))
+    return "\n".join(lines)
+
+
+def ensure_citations(response, fragments):
+    """Fiabilise les citations d'une réponse : corrige celles qui visent la mauvaise fiche, puis ajoute
+    [n] aux phrases restées sans citation quand une fiche les contient clairement.
+
+    Filet de sécurité déterministe (recouvrement de mots) : une phrase trop courte, ou sans fiche
+    convaincante, reste telle quelle.
+    """
+    if not fragments:
+        return response
+    response = fix_citations(response, fragments)
+    fragment_stems = _fragment_stems(fragments)
     lines = []
     for line in response.split("\n"):
         segments = []
@@ -115,8 +160,7 @@ def ensure_citations(response, fragments):
             if CITATION.search(sentence) or len(stems) < CITE_MIN_STEMS:
                 sentences.append(sentence)
                 continue
-            overlaps = [len(stems & s) / len(stems) for s in fragment_stems]
-            best = max(range(len(overlaps)), key=overlaps.__getitem__)
+            best, overlaps = _best_fragment(stems, fragment_stems)
             sentences.append(f"{sentence} [{best + 1}]" if overlaps[best] >= CITE_MIN_OVERLAP else sentence)
         lines.append(" ".join(sentences))
     return "\n".join(lines)
