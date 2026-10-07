@@ -124,7 +124,18 @@ Lecture honnête :
 - Les échecs restants viennent surtout de la **citation** (le modèle répond juste mais ne cite pas la bonne fiche) et de **notes contradictoires non signalées dans la fiche** (gemme de lune : le modèle choisit une version au lieu de signaler la contradiction).
 - La notation a un faux négatif corrigé après coup (« doit être confirmée » non reconnu comme une réserve) ; les chiffres ci-dessus sont ceux de la mesure avant correction.
 
-À venir : annoter les contradictions dans les fiches, forcer la citation, agrandir le jeu de test.
+**Après corrections** (contradictions levées dans les fiches, noms normalisés, citations forcées par le prompt et par un filet de sécurité déterministe ; 53 questions, 2 passages, 106 réponses par configuration) :
+
+| Configuration | Global | Faits justes | Source qui justifie la réponse | Ancrage | Global (notation corrigée*) |
+|---|---|---|---|---|---|
+| Hybride | 86 % | 77/82 | 77/82 (94 %, contre 87 % avant) | 98 % | 90 % |
+| **Hybride + liens** | **88 %** | **79/82** | **78/82 (95 %)** | **99 %** | **92 %** |
+
+\* Après coup, j'ai ajouté à la notation des formules de réserve légitimes qu'elle ne reconnaissait pas (« probablement pas », « à vérifier », « n'a pas encore été demandée ») et recalculé sur les réponses déjà obtenues. Ce n'est pas une nouvelle mesure.
+
+Limites connues : le filet n'ajoute une citation que lorsqu'il n'y en a aucune, il ne corrige pas une citation vers la mauvaise fiche (« l'année actuelle » citée vers le journal au lieu de la fiche Barovie) ; les réponses très courtes ne sont pas rattachées ; l'écart entre hybride et hybride + liens (2 points) reste dans le bruit.
+
+À venir : vérifier les citations existantes (pas seulement les ajouter), agrandir le jeu de test.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

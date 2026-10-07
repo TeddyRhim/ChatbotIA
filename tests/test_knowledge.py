@@ -1,6 +1,6 @@
 import unittest
 
-from knowledge import load_knowledge, normalize_text, retrieve, search_knowledge
+from knowledge import ensure_citations, load_knowledge, normalize_text, retrieve, search_knowledge
 from retrieval import HybridRetriever, fuse_rankings
 from utils.build_knowledge import SAMPLE_LORE, build, parse_fiches
 
@@ -102,6 +102,40 @@ class HybridTest(unittest.TestCase):
         ]
         result = HybridRetriever(knowledge).retrieve("Qui est Elowen ?", k=1)
         self.assertEqual(result[0]["subsection"], "Elowen")
+
+
+class EnsureCitationsTest(unittest.TestCase):
+    FRAGMENTS = [
+        {"section": "PERSONNAGES", "subsection": "Kasimir", "aliases": [],
+         "text": "Faits : Elfe du crépuscule, frère de Katrina ; ancien chef des elfes, sert maintenant Strahd"},
+        {"section": "LIEUX", "subsection": "Phare", "aliases": [],
+         "text": "Faits : Un phare blanc au bord de la falaise nord"},
+    ]
+
+    def test_uncited_sentence_gets_the_supporting_fiche(self):
+        text = "Kasimir est un elfe du crépuscule, frère de Katrina."
+        self.assertEqual(ensure_citations(text, self.FRAGMENTS), text + " [1]")
+
+    def test_each_sentence_is_matched_separately(self):
+        text = "Kasimir est un elfe du crépuscule et frère de Katrina. Un phare blanc borde la falaise nord."
+        out = ensure_citations(text, self.FRAGMENTS)
+        self.assertIn("Katrina. [1]", out)
+        self.assertTrue(out.endswith("nord. [2]"))
+
+    def test_existing_citation_short_or_unsupported_sentences_are_untouched(self):
+        for text in ("Il est elfe du crépuscule [2].",          # déjà cité (même à tort)
+                     "Oui.",                                      # trop court
+                     "Les extraits ne mentionnent pas le chat de Silvaréth."):  # aucune fiche ne le dit
+            self.assertEqual(ensure_citations(text, self.FRAGMENTS), text)
+
+    def test_citation_placed_after_the_full_stop_is_not_duplicated(self):
+        text = "Kasimir est un elfe du crépuscule et frère de Katrina. [1] Un phare blanc borde la falaise nord. [2]"
+        self.assertEqual(ensure_citations(text, self.FRAGMENTS), text)
+        self.assertEqual(ensure_citations("Kasimir est un elfe du crépuscule et frère de Katrina. [1][2]", self.FRAGMENTS),
+                         "Kasimir est un elfe du crépuscule et frère de Katrina. [1][2]")
+
+    def test_no_fragments_changes_nothing(self):
+        self.assertEqual(ensure_citations("Kasimir est un elfe.", []), "Kasimir est un elfe.")
 
 
 class LoadKnowledgeTest(unittest.TestCase):

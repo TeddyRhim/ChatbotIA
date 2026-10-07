@@ -4,12 +4,14 @@ import re
 
 import ollama
 
-from knowledge import load_knowledge, search_knowledge, format_fragment, format_label, cited_numbers
+from knowledge import (load_knowledge, search_knowledge, format_fragment, format_label, cited_numbers,
+                       ensure_citations)
 from graph import bridges
 from retrieval import HybridRetriever
 
 SYSTEM_PROMPT = """Tu es l'assistant de campagne d'un joueur de jeu de rôle : tu l'aides à retrouver ce que ses notes disent. Réponds toujours en français, de façon concise.
-Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis et cite ceux que tu utilises avec [1], [2]...
+Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis.
+CITATIONS OBLIGATOIRES : chaque phrase qui donne un fait se termine par le numéro de l'extrait qui le contient, par exemple « Kasimir est un elfe du crépuscule [2]. ». Une réponse factuelle sans aucun [n] est incomplète.
 Distingue les faits des suppositions : ce qui est marqué (hypothèse), (théorie) ou (à confirmer) n'est PAS un fait établi, dis-le explicitement.
 Si les extraits ne contiennent pas la réponse, dis que tu ne sais pas : n'invente rien.
 Pour une simple conversation (salutations, remerciements), réponds naturellement."""
@@ -171,7 +173,7 @@ class Chatbot:
         response, error = self._chat(self._build_messages(user_input, fragments), temperature=0.3)
         if error:
             return {"text": error, "fragments": fragments, "error": True}
-        response = self._with_sources(response, fragments)
+        response = self._with_sources(ensure_citations(response, fragments), fragments)
         if record:
             self._add_exchange(user_input, response, kind="chat")
         return {"text": response, "fragments": fragments, "error": False}

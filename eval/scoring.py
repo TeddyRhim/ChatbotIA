@@ -17,14 +17,14 @@ from knowledge import cited_numbers, normalize_text
 SOURCES_MARK = "\n\nSources :\n"
 
 ABSTENTION_MARKERS = [
-    "je ne sais pas", "ne sais pas", "pas mentionn", "pas indiqu", "pas precis", "pas explicit",
+    "je ne sais pas", "ne sais pas", "ne sait pas", "pas encore ete demand", "pas mentionn", "pas indiqu", "pas precis", "pas explicit",
     "aucune information", "aucun extrait", "ne contien", "ne mentionn", "non mentionn", "pas d'information",
     "pas de mention", "n'est pas dans", "n'apparait pas", "pas dans les extraits", "pas possible de repondre",
     "ne fournissent pas", "ne donnent pas", "ne precis",
 ]
 
 UNCERTAINTY_MARKERS = [
-    "hypothes", "theorie", "incertain", "a confirmer", "contradict", "contredi", "etre confirm", "pas de consensus", "ambigu",
+    "hypothes", "theorie", "incertain", "a confirmer", "contradict", "contredi", "etre confirm", "ne confirm", "a verifier", "probablement", "pas de consensus", "ambigu",
     "pas confirme", "suppos", "ne le sait pas", "pas clair", "pas certain", "pas etabli", "pas un fait",
     "peut-etre", "pas sur", "selon une note", "controvers", "pas tranch", "discordan", "divergen",
     "reste a clarifier", "a clarifier", "plusieurs versions",

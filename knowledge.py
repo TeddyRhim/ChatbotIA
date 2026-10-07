@@ -80,6 +80,48 @@ def cited_numbers(text):
     return seen
 
 
+CITATION = re.compile(r"\[\d+(?:\s*[,;]\s*\d+)*\]")
+CITATIONS_ONLY = re.compile(r"(?:\[\d+(?:\s*[,;]\s*\d+)*\]\s*)+")
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+CITE_MIN_STEMS = 3      # une phrase plus courte n'est pas assez précise pour être rattachée
+CITE_MIN_OVERLAP = 0.5  # part des mots de la phrase que la fiche doit contenir
+
+
+def ensure_citations(response, fragments):
+    """Ajoute [n] aux phrases sans citation quand une fiche les contient clairement.
+
+    Filet de sécurité quand le modèle oublie de citer : chaque phrase est rattachée à la fiche qui
+    partage le plus de ses mots (au moins la moitié). Les phrases déjà citées, trop courtes ou
+    sans fiche convaincante restent telles quelles.
+    """
+    if not fragments:
+        return response
+    fragment_stems = [_stems(f"{f.get('subsection', '')} {' '.join(f.get('aliases', []))} {f['text']}")
+                      for f in fragments]
+    lines = []
+    for line in response.split("\n"):
+        segments = []
+        for part in SENTENCE_END.split(line):
+            leading = CITATIONS_ONLY.match(part)  # « Phrase. [1] Suite » : le [1] appartient à « Phrase. »
+            if segments and leading:
+                segments[-1] += " " + leading.group(0).strip()
+                part = part[leading.end():]
+                if not part.strip():
+                    continue
+            segments.append(part)
+        sentences = []
+        for sentence in segments:
+            stems = _stems(sentence)
+            if CITATION.search(sentence) or len(stems) < CITE_MIN_STEMS:
+                sentences.append(sentence)
+                continue
+            overlaps = [len(stems & s) / len(stems) for s in fragment_stems]
+            best = max(range(len(overlaps)), key=overlaps.__getitem__)
+            sentences.append(f"{sentence} [{best + 1}]" if overlaps[best] >= CITE_MIN_OVERLAP else sentence)
+        lines.append(" ".join(sentences))
+    return "\n".join(lines)
+
+
 def format_label(fragment):
     """Étiquette courte d'une fiche, pour afficher les sources."""
     label = fragment["section"]

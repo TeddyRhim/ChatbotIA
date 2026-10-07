@@ -24,12 +24,15 @@ class MarkersTest(unittest.TestCase):
     def test_abstention(self):
         self.assertTrue(is_abstention("Je ne sais pas, les extraits ne le disent pas."))
         self.assertTrue(is_abstention("Ce n'est pas mentionné dans les notes."))
+        self.assertTrue(is_abstention("L'identité du chef n'a pas encore été demandée."))
         self.assertFalse(is_abstention("Le chat s'appelle Moustache."))
 
     def test_uncertainty(self):
         self.assertTrue(flags_uncertainty("C'est une théorie du joueur, pas un fait."))
         self.assertTrue(flags_uncertainty("Les notes se contredisent à ce sujet."))
         self.assertTrue(flags_uncertainty("Cette information doit être confirmée."))
+        self.assertTrue(flags_uncertainty("Ce n'est probablement pas lui (à vérifier en jeu)."))
+        self.assertTrue(flags_uncertainty("Les notes suggèrent un lien mais ne confirment pas qu'il en est un."))
         self.assertFalse(flags_uncertainty("Elowen est la sœur du roi."))
 
 
