@@ -81,3 +81,15 @@ class VectorStore:
             n_results=min(k, collection.count()),
         )
         return [int(i) for i in result["ids"][0]]
+
+    def similarities(self, question, indices):
+        """Similarité (cosinus) entre la question et des fiches données : {index: score}."""
+        if not indices:
+            return {}
+        collection = self._client.get_collection("lore")
+        stored = collection.get(ids=[str(i) for i in indices], include=["embeddings"])
+        query = self._embed([question], "query: ")[0]
+        return {
+            int(i): sum(a * b for a, b in zip(query, vector))
+            for i, vector in zip(stored["ids"], stored["embeddings"])
+        }

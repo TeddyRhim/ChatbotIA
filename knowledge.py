@@ -71,6 +71,15 @@ def retrieve(question, knowledge, k=5):
     return [fragment for _, fragment in scored[:k]]
 
 
+def cited_numbers(text):
+    """Numéros [n] cités dans une réponse, dans l'ordre d'apparition, sans doublon."""
+    seen = []
+    for n in re.findall(r"\[(\d+)\]", text):
+        if int(n) not in seen:
+            seen.append(int(n))
+    return seen
+
+
 def format_label(fragment):
     """Étiquette courte d'une fiche, pour afficher les sources."""
     label = fragment["section"]

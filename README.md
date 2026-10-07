@@ -16,7 +16,7 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 - Contexte des derniers échanges transmis au modèle
 - Réponses fondées sur les extraits retrouvés, avec sources affichées (« Je ne sais pas » si rien de pertinent)
 - `search <mots>` : recherche dans la base de connaissances (tous les mots doivent apparaître, accents et casse ignorés), puis dans l’historique
-- Commandes du terminal : `search`, `reset`, `quit`
+- Commandes du terminal : `search`, `piste`, `reset`, `quit`
 - Tests unitaires de la recherche et de la construction de la base (`tests/`)
 
 ---
@@ -27,6 +27,7 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 - `console_chat.py` / `interface.py` : interfaces terminal et web.
 - `knowledge.py` : chargement, recherche `search` et récupération par mots-clés (noms, alias).
 - `vector_store.py` / `retrieval.py` : recherche par sens (embeddings `multilingual-e5-small` dans ChromaDB, index dans `data/vectordb/`, reconstruit automatiquement) et fusion hybride avec les mots-clés.
+- `graph.py` : liens entre fiches (mentions explicites d'un nom ou alias, champ `lié:`), fiches voisines et « rapprochements » (paires non liées qui partagent des voisines).
 - `eval/eval_retrieval.py` : compare mots-clés, sens et hybride (hit@k, MRR) sur un jeu de questions (`_eval.json`).
 - `data/lore/` : fiches de l'univers (privé) ; `data/sample_lore/` : exemple public ; `data/data_raw/` : notes brutes (privé).
 - `data/knowledge/knowledge.json` : base générée par `utils/build_knowledge.py` (non versionnée).
@@ -102,7 +103,11 @@ Ce qui est conservé : l'historique de conversation, la base `knowledge.json` (c
 
 Résultats actuels de la récupération (25 questions de test, 156 fiches) : hit@6 = 88 % mots-clés seuls, 92 % sens seul, **96 % hybride** (`python eval/eval_retrieval.py`).
 
-À venir : liens explicites entre fiches (récupération des fiches voisines) et un mode `piste` qui propose des liens non écrits, étiquetés comme hypothèses et sourcés.
+**Liens entre fiches** : un graphe construit à partir des mentions explicites ; les fiches voisines de celles trouvées complètent le contexte. Sur 14 questions à deux éléments, l'effet est faible (12/14 contre 11/14 pour un même budget de 10 fiches) : le jeu de test est trop petit pour conclure.
+
+**Mode `piste`** : le raisonnement est *calculé* par le graphe (paires de fiches non liées mais qui partagent des voisines), le LLM local (7B) ne fait que formuler. Chaque piste est une hypothèse, doit citer ses fiches (sinon elle est signalée ⚠) et se termine par une vérification à faire auprès du MJ. Limite connue : un modèle 7B produit parfois des pistes vagues ou répète ce que les notes disent déjà ; ce sont des points de départ, pas des déductions.
+
+À venir : évaluation de la qualité des réponses et agrandissement du jeu de test.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 
@@ -141,6 +146,7 @@ streamlit run interface.py    # interface web
 
 Commandes du chat terminal :
 
+- `piste <sujet>` → mode enquêteur : propose des liens **non écrits** dans les notes, présentés comme hypothèses, avec fiches citées et « à vérifier » (voir ci-dessous)
 - `search <mot>` → recherche dans l'historique puis dans le knowledge
 - `reset` → vider l'historique
 - `quit` → quitter

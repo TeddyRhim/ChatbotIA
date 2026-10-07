@@ -8,6 +8,7 @@ Format d'une fiche (un fichier par catégorie : personnages.md, lieux.md, ...) :
     # Nom
     alias: Autre nom, Autre orthographe
     statut: en cours
+    lié: Autre fiche, Une troisième (liens explicites, en plus des mentions détectées)
     - fait établi
     - (hypothèse) idée du joueur, pas un fait
     - (à confirmer) point contradictoire ou incertain
@@ -49,6 +50,10 @@ def _lore_files(directory):
     return sorted(p for p in directory.glob("*.md") if not p.name.startswith("_"))
 
 
+def _split(value):
+    return [v.strip() for v in value.split(",") if v.strip()]
+
+
 def _render(meta, facts):
     parts = []
     if meta.get("alias"):
@@ -70,7 +75,8 @@ def parse_fiches(text, section):
             fragments.append({
                 "section": section,
                 "subsection": current["name"],
-                "aliases": [a.strip() for a in current["meta"].get("alias", "").split(",") if a.strip()],
+                "aliases": _split(current["meta"].get("alias", "")),
+                "liens": _split(current["meta"].get("lié", "")),
                 "text": _render(current["meta"], current["facts"]),
             })
 

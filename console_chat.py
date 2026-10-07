@@ -4,7 +4,7 @@ from main import Chatbot
 def run():
     bot = Chatbot()
 
-    print("Chatbot IA : Salut ! Commandes : 'search <mot>', 'reset', 'quit'.")
+    print("Chatbot IA : Salut ! Commandes : 'search <mots>', 'piste <sujet>', 'reset', 'quit'.")
 
     while True:
         user_input = input("Toi : ").strip()
