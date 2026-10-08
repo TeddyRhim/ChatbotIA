@@ -25,6 +25,7 @@ class MarkersTest(unittest.TestCase):
         self.assertTrue(is_abstention("Je ne sais pas, les extraits ne le disent pas."))
         self.assertTrue(is_abstention("Ce n'est pas mentionné dans les notes."))
         self.assertTrue(is_abstention("L'identité du chef n'a pas encore été demandée."))
+        self.assertTrue(is_abstention("Elle possède ces souvenirs, sans qu'on sache comment."))
         self.assertFalse(is_abstention("Le chat s'appelle Moustache."))
 
     def test_uncertainty(self):
@@ -39,6 +40,9 @@ class MarkersTest(unittest.TestCase):
 class GroundingTest(unittest.TestCase):
     def test_names_exclude_sentence_starts(self):
         self.assertEqual(proper_names("Selon les notes, Elowen garde la tour. Voici Korrin."), ["Elowen", "Korrin"])
+
+    def test_word_after_a_citation_is_a_sentence_start_not_a_name(self):
+        self.assertEqual(proper_names("Elowen garde la tour [1] Donc Korrin la cherche."), ["Korrin"])
 
     def test_invented_names_are_detected(self):
         text = "Elowen travaille avec Gandalf."

@@ -178,7 +178,18 @@ Un premier passage avait donné 92 % pour « hybride + liens » : la cause princ
 
 Échecs restants : une réponse correcte mais incomplète (l'état d'un personnage omis quand on demande seulement où il est), une réponse trop courte pour être rattachée à une fiche, une question de priorités qui ne cite que deux quêtes sur trois, et une réserve légitime (« rien n'est confirmé ») que la notation ne reconnaît pas comme une abstention.
 
-À venir : agrandir encore le jeu de test, regrouper les objectifs actuels dans une seule fiche.
+**Après enrichissement des quêtes, des lieux et des objets, avec notation corrigée** (190 fiches, 78 questions, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 95 % | 100 % | 80 % | 100 % | 95 % | 4,0 |
+| **Hybride + liens** | 95 % | 94 % | 90 % | 100 % | 95 % | 5,1 |
+
+Deux corrections de notation, faites après avoir constaté deux faux échecs : un mot placé juste après une citation (« [1] Donc… ») n'est plus pris pour un nom propre inventé, et « sans qu'on sache » compte comme une réserve légitime. La mesure a ensuite été refaite sur de nouvelles réponses, pas recalculée.
+
+Avec des fiches identiques, deux mesures successives donnent 96 % puis 95 % pour « hybride + liens » : les questions à réponse hésitante changent d'un passage à l'autre. **L'écart entre les deux configurations (0 à 3 points selon la mesure) reste dans le bruit** ; on ne peut pas conclure que l'une est meilleure.
+
+À venir : agrandir encore le jeu de test (plus de questions, plusieurs passages).
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

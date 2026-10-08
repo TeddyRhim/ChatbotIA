@@ -21,6 +21,7 @@ ABSTENTION_MARKERS = [
     "aucune information", "aucun extrait", "ne contien", "ne mentionn", "non mentionn", "pas d'information",
     "pas de mention", "n'est pas dans", "n'apparait pas", "pas dans les extraits", "pas possible de repondre",
     "ne fournissent pas", "ne donnent pas", "ne precis",
+    "sans qu'on sache", "sans que l'on sache", "on ne sait pas",
 ]
 
 UNCERTAINTY_MARKERS = [
@@ -62,7 +63,7 @@ def proper_names(text):
     names = []
     for match in _NAME.finditer(text):
         before = text[: match.start()].rstrip()
-        if not before or before[-1] in ".!?:\n*#-—>(|":
+        if not before or before[-1] in ".!?:\n*#-—>(|]":  # « ] » : fin d'une citation [n], donc début de phrase
             continue
         names.append(match.group(0).strip("'’-"))
     return names
