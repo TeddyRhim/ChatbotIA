@@ -156,9 +156,18 @@ Lecture honnête :
 
 Deux changements ont été faits en même temps (correction des citations et lecture des citations groupées) : leur part respective dans le gain n'est pas mesurée.
 
-Limites connues : les réponses très courtes (« Le Rouge l'a emparé. ») ne sont pas rattachées à une fiche ; une réponse peut omettre son sujet ; une théorie de joueur n'est pas toujours présentée comme telle ; l'écart entre configurations reste modeste sur un petit jeu de test.
+Limites connues : les réponses très courtes (une demi-phrase sans sujet) ne sont pas rattachées à une fiche ; une réponse peut omettre son sujet ; une théorie de joueur n'est pas toujours présentée comme telle ; l'écart entre configurations reste modeste sur un petit jeu de test.
 
-À venir : agrandir le jeu de test.
+**Après enrichissement des fiches** (une phase de questions/réponses avec le joueur : composition du groupe, relations entre personnages, chronologie par arcs, lieux, visions, état actuel des personnages ; 173 fiches ; jeu de test passé de 53 à 69 questions, dont 16 portant sur ces nouveaux contenus ; 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 94 % | 94 % | 90 % | 100 % | 93 % | 3,5 |
+| **Hybride + liens** | 93 % | **100 %** | **100 %** | 100 % | **94 %** | 4,1 |
+
+Le jeu de test a changé : ces chiffres ne sont pas strictement comparables aux précédents. Les 8 échecs de « hybride + liens » viennent de 4 questions (une réponse correcte mais incomplète, une mauvaise fiche citée, un fait relégué en bas de fiche, une question ambiguë). Enseignement : **l'ordre des faits dans une fiche compte** (le fait principal doit venir en premier) et un nom de fiche trop courant (« le groupe ») devient un nœud du graphe qui noie les vrais liens.
+
+À venir : agrandir encore le jeu de test.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 
