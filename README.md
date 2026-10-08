@@ -167,7 +167,18 @@ Limites connues : les réponses très courtes (une demi-phrase sans sujet) ne so
 
 Le jeu de test a changé : ces chiffres ne sont pas strictement comparables aux précédents. Les 8 échecs de « hybride + liens » viennent de 4 questions (une réponse correcte mais incomplète, une mauvaise fiche citée, un fait relégué en bas de fiche, une question ambiguë). Enseignement : **l'ordre des faits dans une fiche compte** (le fait principal doit venir en premier) et un nom de fiche trop courant (« le groupe ») devient un nœud du graphe qui noie les vrais liens.
 
-À venir : agrandir encore le jeu de test.
+**Après ajout d'une fiche de personnage (Roll20) et mise à jour des quêtes** (180 fiches, 78 questions, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 91 % | 94 % | 70 % | 100 % | 90 % | 3,4 |
+| **Hybride + liens** | **96 %** | 88 % | **100 %** | 100 % | **96 %** | 5,0 |
+
+Un premier passage avait donné 92 % pour « hybride + liens » : la cause principale était une **fiche trop longue** (6 300 caractères). Le contexte du modèle (8 192 jetons) déborde alors, et le bot répond « je ne sais pas » à une question dont la réponse est dans la fiche. Découper la fiche en plusieurs fiches courtes a réglé le problème. Règle retenue : une fiche = quelques milliers de caractères au maximum, le fait principal en premier.
+
+Échecs restants : une réponse correcte mais incomplète (l'état d'un personnage omis quand on demande seulement où il est), une réponse trop courte pour être rattachée à une fiche, une question de priorités qui ne cite que deux quêtes sur trois, et une réserve légitime (« rien n'est confirmé ») que la notation ne reconnaît pas comme une abstention.
+
+À venir : agrandir encore le jeu de test, regrouper les objectifs actuels dans une seule fiche.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 
