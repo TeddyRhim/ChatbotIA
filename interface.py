@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from main import Chatbot
 
@@ -166,6 +167,9 @@ DECOR_HTML = '<div class="brume haute"></div><div class="brume basse"></div><div
 ECLAIR_HTML = '<div class="eclair"></div>'
 
 
+AUDIO_TYPES = {"mp3": "audio/mpeg", "ogg": "audio/ogg", "wav": "audio/wav", "m4a": "audio/mp4"}
+
+
 def ambiance_file():
     """Musique d'ambiance facultative : assets/ambiance.mp3 (ou .ogg/.wav/.m4a), jamais versionnée."""
     for extension in ("mp3", "ogg", "wav", "m4a"):
@@ -173,6 +177,35 @@ def ambiance_file():
         if candidate.exists():
             return candidate
     return None
+
+
+def set_audio_volume(percent):
+    """Règle le volume du lecteur de la barre latérale (st.audio n'a pas d'option de volume).
+
+    Le script s'exécute dans une iframe de même origine ; il réessaie un court moment, le temps que
+    le lecteur soit affiché, puis réapplique le volume à chaque lecture.
+    """
+    components.html(
+        f"""<script>
+        const volume = {percent} / 100;
+        let essais = 0;
+        const appliquer = () => {{
+          const audio = window.parent.document.querySelector('audio');
+          if (audio) {{
+            audio.volume = volume;
+            audio.loop = true;
+            if (!audio.dataset.volumeReglé) {{
+              audio.dataset.volumeReglé = '1';
+              audio.addEventListener('play', () => {{ audio.volume = volume; }});
+            }}
+          }} else if (essais++ < 30) {{
+            setTimeout(appliquer, 300);
+          }}
+        }};
+        appliquer();
+        </script>""",
+        height=0,
+    )
 
 
 @st.cache_resource
@@ -214,7 +247,9 @@ with st.sidebar:
     st.subheader("Ambiance sonore")
     music = ambiance_file()
     if music:
-        st.audio(str(music), loop=True)
+        st.audio(str(music), format=AUDIO_TYPES[music.suffix.lstrip('.')], loop=True)
+        volume = st.slider("Volume du fond sonore", 0, 100, 12, key="volume_ambiance")
+        set_audio_volume(volume)
         st.caption("Appuyez sur lecture : le navigateur bloque le son tant qu'on n'a pas cliqué.")
     else:
         st.caption("Déposez un fichier assets/ambiance.mp3 pour activer une musique de fond.")
