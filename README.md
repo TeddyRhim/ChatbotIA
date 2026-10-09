@@ -241,6 +241,8 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
+Les dépendances de l'expérience de fine-tuning (dossier `legacy/`, dont PyTorch) sont séparées : `pip install -r requirements-legacy.txt`, seulement si besoin.
+
 4. Génération de la base de connaissances (à partir de `data/lore/` si présent, sinon de l'exemple `data/sample_lore/`) :
 ```bash
 python utils/build_knowledge.py
