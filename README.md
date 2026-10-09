@@ -25,7 +25,7 @@ Captures de l'interface web (Streamlit) sur l'univers fictif d'exemple `data/sam
 
 ## Fonctionnalités principales
 
-- Chat en temps réel dans le terminal (`console_chat.py`) ou dans une interface web Streamlit (`interface.py`)
+- Chat en temps réel dans le terminal (`console_chat.py`) ou dans une interface web Streamlit (`interface.py`) : thème sombre « nuit brumeuse » (CSS local, aucune ressource téléchargée), sources repliées sous chaque réponse
 - Historique sauvegardé automatiquement (`chat_history.json`, ignoré par git) et repris au lancement
 - Contexte des derniers échanges transmis au modèle
 - Réponses fondées sur les extraits retrouvés, avec sources affichées (« Je ne sais pas » si rien de pertinent)
