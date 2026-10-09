@@ -1,0 +1,7 @@
+# Uniquement pour l'experience de fine-tuning abandonnee (dossier legacy/)
+-r requirements.txt
+transformers>=4.57
+torch==2.9.0
+peft==0.17.1
+datasets==4.4.1
+accelerate==1.11.0
