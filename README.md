@@ -200,6 +200,21 @@ Ce jeu plus large a fait apparaître un vrai défaut : à une question dont la r
 
 Les échecs restants sont surtout des réponses justes mais incomplètes, et des cas où une théorie du joueur n'est pas présentée comme telle.
 
+**Après enrichissement par questions-réponses avec le joueur** (192 fiches, 113 questions, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 95 % | 100 % | 86 % | 99 % | 95 % | 4,3 |
+| **Hybride + liens** | **98 %** | 95 % | **100 %** | 100 % | **98 %** | 6,6 |
+
+Ce qu'ont montré les échecs de cette série, tous corrigés **dans les fiches** et non dans le code :
+- **Un personnage mort doit être mis au passé partout.** Le bot a répondu qu'un personnage mort était vivant, parce qu'une autre fiche disait encore « elle est fascinée par lui » au présent. Il faut un statut explicite (« morte ») et des phrases au passé dans toutes les fiches qui le mentionnent.
+- **Une phrase sans sujet est une mauvaise réponse** (« A rendu X faible »), et **un mot courant** (« mère de famille ») attire des fiches hors sujet.
+- **Une théorie doit être étiquetée comme telle dans la fiche** (« théorie du joueur, non confirmée »), sinon le modèle la présente comme un fait.
+- **Une fiche doit commencer par ce qu'on lui demande le plus** ; une fiche longue (plus de quelques milliers de caractères) est mal lue.
+
+Les échecs restants : une réponse correcte mais incomplète, une réponse trop courte pour être rattachée à une fiche, et une réserve légitime (« rien n'est confirmé ») que la notation ne compte pas comme une abstention.
+
 À venir : plus de passages par question, pour réduire le bruit entre deux mesures.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
