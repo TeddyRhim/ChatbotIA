@@ -7,11 +7,25 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 * Le fine-tuning n’a pas pu être conclu (dataset trop limité, modèle inadapté au français).
 * Les scripts de `legacy/` redirigent le cache HuggingFace vers `D:\huggingface_cache` (manque de place sur C:). Supprimez la ligne `os.environ["HF_HOME"]` de `legacy/finetune_lora.py` si vous n'en avez pas besoin.
 
+## Aperçu
+
+Captures de l'interface web (Streamlit) sur l'univers fictif d'exemple `data/sample_lore/` : une réponse prudente avec sa source quand les notes ne sont pas certaines, et un « je ne sais pas » quand l'information n'existe pas.
+
+| Question sur une hypothèse | Source citée, puis abstention |
+| --- | --- |
+| ![Question sur une hypothèse](docs/screenshots/chat-1.jpg) | ![Source citée dépliée, puis je ne sais pas](docs/screenshots/chat-2.jpg) |
+
+## En bref
+
+- **RAG 100 % local** : Qwen2.5 7B via Ollama, embeddings `multilingual-e5-small` dans ChromaDB, recherche hybride mots-clés et sens, liens entre fiches.
+- **Mesuré** : récupération (hit@6 = 96 % en hybride sur 25 questions) et réponses (53 questions, notation déterministe) ; détails et limites dans [Évaluation des réponses](#évaluation-des-réponses).
+- **Honnête sur ses limites** : jeu de test petit, écarts entre configurations modestes, fine-tuning LoRA abandonné (conservé dans `legacy/`).
+
 ---
 
 ## Fonctionnalités principales
 
-- Chat en temps réel dans le terminal (`console_chat.py`) ou dans une interface web Streamlit (`interface.py`)
+- Chat en temps réel dans le terminal (`console_chat.py`) ou dans une interface web Streamlit (`interface.py`) : thème sombre « nuit brumeuse » (CSS local, aucune ressource téléchargée), sources repliées sous chaque réponse
 - Historique sauvegardé automatiquement (`chat_history.json`, ignoré par git) et repris au lancement
 - Contexte des derniers échanges transmis au modèle
 - Réponses fondées sur les extraits retrouvés, avec sources affichées (« Je ne sais pas » si rien de pertinent)
@@ -78,7 +92,7 @@ statut: alliée
 - [-] Tester le modèle fine-tuné avec `main.py`
 
 ### **Étape 5 : Améliorations futures**
-- [ ] Intégrer une interface web / GUI
+- [x] Intégrer une interface web / GUI (Streamlit, `interface.py`)
 - [-] Ajouter des suggestions dynamiques du bot basées sur les connexions entre personnages, lieux, objets
 - [ ] Gestion automatique des mises à jour du knowledge
 - [?] Possibilité de mise à jour via le bot (ajouter du knowledge en live)
@@ -142,9 +156,51 @@ Lecture honnête :
 
 Deux changements ont été faits en même temps (correction des citations et lecture des citations groupées) : leur part respective dans le gain n'est pas mesurée.
 
-Limites connues : les réponses très courtes (« Le Rouge l'a emparé. ») ne sont pas rattachées à une fiche ; une réponse peut omettre son sujet ; une théorie de joueur n'est pas toujours présentée comme telle ; l'écart entre configurations reste modeste sur un petit jeu de test.
+Limites connues : les réponses très courtes (une demi-phrase sans sujet) ne sont pas rattachées à une fiche ; une réponse peut omettre son sujet ; une théorie de joueur n'est pas toujours présentée comme telle ; l'écart entre configurations reste modeste sur un petit jeu de test.
 
-À venir : agrandir le jeu de test.
+**Après enrichissement des fiches** (une phase de questions/réponses avec le joueur : composition du groupe, relations entre personnages, chronologie par arcs, lieux, visions, état actuel des personnages ; 173 fiches ; jeu de test passé de 53 à 69 questions, dont 16 portant sur ces nouveaux contenus ; 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 94 % | 94 % | 90 % | 100 % | 93 % | 3,5 |
+| **Hybride + liens** | 93 % | **100 %** | **100 %** | 100 % | **94 %** | 4,1 |
+
+Le jeu de test a changé : ces chiffres ne sont pas strictement comparables aux précédents. Les 8 échecs de « hybride + liens » viennent de 4 questions (une réponse correcte mais incomplète, une mauvaise fiche citée, un fait relégué en bas de fiche, une question ambiguë). Enseignement : **l'ordre des faits dans une fiche compte** (le fait principal doit venir en premier) et un nom de fiche trop courant (« le groupe ») devient un nœud du graphe qui noie les vrais liens.
+
+**Après ajout d'une fiche de personnage (Roll20) et mise à jour des quêtes** (180 fiches, 78 questions, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 91 % | 94 % | 70 % | 100 % | 90 % | 3,4 |
+| **Hybride + liens** | **96 %** | 88 % | **100 %** | 100 % | **96 %** | 5,0 |
+
+Un premier passage avait donné 92 % pour « hybride + liens » : la cause principale était une **fiche trop longue** (6 300 caractères). Le contexte du modèle (8 192 jetons) déborde alors, et le bot répond « je ne sais pas » à une question dont la réponse est dans la fiche. Découper la fiche en plusieurs fiches courtes a réglé le problème. Règle retenue : une fiche = quelques milliers de caractères au maximum, le fait principal en premier.
+
+Échecs restants : une réponse correcte mais incomplète (l'état d'un personnage omis quand on demande seulement où il est), une réponse trop courte pour être rattachée à une fiche, une question de priorités qui ne cite que deux quêtes sur trois, et une réserve légitime (« rien n'est confirmé ») que la notation ne reconnaît pas comme une abstention.
+
+**Après enrichissement des quêtes, des lieux et des objets, avec notation corrigée** (190 fiches, 78 questions, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 95 % | 100 % | 80 % | 100 % | 95 % | 4,0 |
+| **Hybride + liens** | 95 % | 94 % | 90 % | 100 % | 95 % | 5,1 |
+
+Deux corrections de notation, faites après avoir constaté deux faux échecs : un mot placé juste après une citation (« [1] Donc… ») n'est plus pris pour un nom propre inventé, et « sans qu'on sache » compte comme une réserve légitime. La mesure a ensuite été refaite sur de nouvelles réponses, pas recalculée.
+
+Avec des fiches identiques, deux mesures successives donnent 96 % puis 95 % pour « hybride + liens » : les questions à réponse hésitante changent d'un passage à l'autre. **L'écart entre les deux configurations (0 à 3 points selon la mesure) reste dans le bruit** ; on ne peut pas conclure que l'une est meilleure.
+
+**Jeu de test élargi à 104 questions** (190 fiches, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 94 % | 88 % | 79 % | 100 % | 92 % | 3,8 |
+| **Hybride + liens** | **96 %** | 83 % | 86 % | 100 % | **94 %** | 5,3 |
+
+Ce jeu plus large a fait apparaître un vrai défaut : à une question dont la réponse n'est pas dans les notes (l'emplacement d'un lieu), le modèle a **complété avec une position plausible** et cité une fiche qui n'en parlait pas. Correction : écrire explicitement dans la fiche que l'information n'est pas notée. Les modèles de 7 milliards de paramètres comblent volontiers les vides ; une absence documentée vaut mieux qu'une absence silencieuse.
+
+Les échecs restants sont surtout des réponses justes mais incomplètes, et des cas où une théorie du joueur n'est pas présentée comme telle.
+
+À venir : plus de passages par question, pour réduire le bruit entre deux mesures.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 

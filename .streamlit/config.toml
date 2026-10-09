@@ -1,0 +1,16 @@
+[server]
+# Le surveillant de fichiers de Streamlit parcourt tous les modules de transformers
+# et affiche ~100 tracebacks (torchvision absent, inutile ici). Rechargement manuel.
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+# Ambiance « nuit brumeuse » : fond bleu-noir, lune bleu glacier, accent cramoisi.
+base = "dark"
+primaryColor = "#b3202e"
+backgroundColor = "#0b0e16"
+secondaryBackgroundColor = "#141a26"
+textColor = "#dfe6ee"
+font = "serif"
