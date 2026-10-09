@@ -189,7 +189,18 @@ Deux corrections de notation, faites après avoir constaté deux faux échecs : 
 
 Avec des fiches identiques, deux mesures successives donnent 96 % puis 95 % pour « hybride + liens » : les questions à réponse hésitante changent d'un passage à l'autre. **L'écart entre les deux configurations (0 à 3 points selon la mesure) reste dans le bruit** ; on ne peut pas conclure que l'une est meilleure.
 
-À venir : agrandir encore le jeu de test (plus de questions, plusieurs passages).
+**Jeu de test élargi à 104 questions** (190 fiches, 2 passages) :
+
+| Configuration | Faits | Abstention | Incertitude | Ancrage | Global | Secondes/réponse |
+|---|---|---|---|---|---|---|
+| Hybride | 94 % | 88 % | 79 % | 100 % | 92 % | 3,8 |
+| **Hybride + liens** | **96 %** | 83 % | 86 % | 100 % | **94 %** | 5,3 |
+
+Ce jeu plus large a fait apparaître un vrai défaut : à une question dont la réponse n'est pas dans les notes (l'emplacement d'un lieu), le modèle a **complété avec une position plausible** et cité une fiche qui n'en parlait pas. Correction : écrire explicitement dans la fiche que l'information n'est pas notée. Les modèles de 7 milliards de paramètres comblent volontiers les vides ; une absence documentée vaut mieux qu'une absence silencieuse.
+
+Les échecs restants sont surtout des réponses justes mais incomplètes, et des cas où une théorie du joueur n'est pas présentée comme telle.
+
+À venir : plus de passages par question, pour réduire le bruit entre deux mesures.
 
 Pistes ultérieures : ajout de documents personnels (PDF, notes), mise à jour de la base depuis le chat, multi-utilisateur et profils.
 
