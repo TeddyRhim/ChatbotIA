@@ -199,7 +199,7 @@ class Chatbot:
         for block in re.split(r"(?m)^(?=Piste\s*\d*\s*:)", response):
             valid = [n for n in cited_numbers(block) if 1 <= n <= n_fragments]
             if block.lstrip().startswith("Piste") and not valid:
-                block = block.rstrip() + "\n(⚠ aucune fiche citée : piste non justifiée par les notes)\n\n"
+                block = block.rstrip() + "\n(Attention : aucune fiche citée : piste non justifiée par les notes)\n\n"
             flagged.append(block)
         return "".join(flagged)
 

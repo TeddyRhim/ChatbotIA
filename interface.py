@@ -2,11 +2,11 @@ import streamlit as st
 
 from main import Chatbot
 
-st.set_page_config(page_title="Grimoire de campagne", page_icon="🌙", layout="centered")
+st.set_page_config(page_title="Grimoire de campagne", layout="centered")
 
 SOURCES_MARK = "\n\nSources :\n"
-USER_AVATAR = "🪶"
-BOT_AVATAR = "🌙"
+USER_AVATAR = None
+BOT_AVATAR = None
 
 # Habillage « nuit brumeuse », entièrement local (aucune police ni image téléchargée).
 THEME_CSS = """
@@ -111,7 +111,7 @@ def render(content):
 st.markdown(THEME_CSS, unsafe_allow_html=True)
 bot = get_bot()
 
-st.title("🌙 Grimoire de campagne")
+st.title("Grimoire de campagne")
 st.markdown('<p class="sous-titre">Interrogez vos notes de campagne. Chaque réponse cite ses sources.</p>',
             unsafe_allow_html=True)
 
