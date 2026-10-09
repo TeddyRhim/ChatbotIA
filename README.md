@@ -11,9 +11,9 @@ Un chatbot Python en français qui répond à partir d'une **base de connaissanc
 
 Captures de l'interface web (Streamlit) sur l'univers fictif d'exemple `data/sample_lore/` : une réponse prudente avec sa source quand les notes ne sont pas certaines, et un « je ne sais pas » quand l'information n'existe pas.
 
-| Question sur une hypothèse | Sources citées, puis abstention |
+| Question sur une hypothèse | Source citée, puis abstention |
 | --- | --- |
-| ![Question sur une hypothèse](docs/screenshots/chat-1.jpg) | ![Sources citées et je ne sais pas](docs/screenshots/chat-2.jpg) |
+| ![Question sur une hypothèse](docs/screenshots/chat-1.jpg) | ![Source citée dépliée, puis je ne sais pas](docs/screenshots/chat-2.jpg) |
 
 ## En bref
 
