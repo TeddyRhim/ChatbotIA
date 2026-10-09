@@ -147,6 +147,7 @@ class Chatbot:
                 model=self.model,
                 messages=messages,
                 options={"temperature": temperature, "num_ctx": 8192},
+                keep_alive="2m",  # libère la VRAM et la RAM 2 minutes après la dernière question
             )
         except (ConnectionError, ollama.ResponseError) as e:
             return None, f"Erreur Ollama ({e}). Le serveur est-il lancé et le modèle « {self.model} » téléchargé ?"
