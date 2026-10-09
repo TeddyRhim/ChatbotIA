@@ -21,3 +21,6 @@ data/lora_finetuned/
 
 # Résultats détaillés des évaluations (contiennent des extraits de la campagne)
 eval/results_*.json
+
+# Musique d ambiance (droits d auteur : jamais versionnee)
+assets/ambiance.*
