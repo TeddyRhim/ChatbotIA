@@ -1,6 +1,7 @@
 import unittest
 
-from knowledge import ensure_citations, fix_citations, load_knowledge, normalize_text, retrieve, search_knowledge
+from knowledge import (ensure_citations, fix_citations, load_knowledge, normalize_text, open_points, retrieve,
+                       search_knowledge)
 from retrieval import HybridRetriever, fuse_rankings
 from utils.build_knowledge import SAMPLE_LORE, build, parse_fiches
 
@@ -178,6 +179,23 @@ class FixCitationsTest(unittest.TestCase):
         text = "L'année actuelle est 1641 [2]. Kasimir est un elfe du crépuscule et frère de Katrina."
         self.assertEqual(ensure_citations(text, self.FRAGMENTS),
                          "L'année actuelle est 1641 [1]. Kasimir est un elfe du crépuscule et frère de Katrina. [3]")
+
+
+class OpenPointsTest(unittest.TestCase):
+    FRAGMENTS = [
+        {"section": "PERSONNAGES", "subsection": "Rose", "aliases": [],
+         "text": "Faits : Alliée ; (théorie du joueur) serait la mère d'Amon ; Peut rendre invisible"},
+        {"section": "LIEUX", "subsection": "Grotte", "aliases": [],
+         "text": "Faits : L'emplacement exact n'est pas noté ; Lieu sombre"},
+    ]
+
+    def test_only_unsettled_items_are_listed_with_their_fragment_number(self):
+        self.assertEqual(open_points(self.FRAGMENTS),
+                         [(1, "Rose : (théorie du joueur) serait la mère d'Amon"), (2, "Grotte : L'emplacement exact n'est pas noté")])
+
+    def test_limit_and_empty(self):
+        self.assertEqual(len(open_points(self.FRAGMENTS, limit=1)), 1)
+        self.assertEqual(open_points([]), [])
 
 
 class LoadKnowledgeTest(unittest.TestCase):

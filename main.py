@@ -4,7 +4,7 @@ import re
 
 import ollama
 
-from knowledge import (load_knowledge, search_knowledge, format_fragment, format_label, cited_numbers,
+from knowledge import (load_knowledge, search_knowledge, format_fragment, format_label, cited_numbers, open_points,
                        ensure_citations)
 from graph import bridges
 from retrieval import HybridRetriever
@@ -18,11 +18,11 @@ Pour une simple conversation (salutations, remerciements), réponds naturellemen
 
 PISTE_PROMPT = """Tu es un enquêteur qui aide un joueur de jeu de rôle (pas le MJ) à relier les éléments de ses notes de campagne. Réponds en français.
 On te donne des extraits numérotés et des RAPPROCHEMENTS : des paires de fiches que les notes ne relient pas directement mais qui ont des éléments en commun.
-Propose 2 à 4 PISTES, chacune fondée sur un rapprochement :
+Propose 0 à 3 PISTES, jamais plus que ce que les extraits permettent. Chaque piste doit s'appuyer sur DEUX extraits différents qui se recoupent réellement :
 Piste N : une phrase qui formule le lien possible (« ... pourrait être lié à ... »). C'est une HYPOTHÈSE, jamais un fait.
-Justification : les éléments communs et les extraits qui la motivent, cités [1], [2]...
+Justification : le fait de chaque extrait, cité [1], [2]...
 À vérifier : une question à poser au MJ ou une observation à faire en jeu.
-Règles : n'invente aucun fait absent des extraits ; ne décris pas de cause ou de motivation que les notes n'indiquent pas ; ce qui est marqué (hypothèse), (théorie) ou (à confirmer) reste incertain ; ne répète pas ce que les notes disent déjà ; si aucun rapprochement n'est plausible, dis-le simplement."""
+Règles : n'invente aucun fait absent des extraits ; ne décris pas de cause ou de motivation que les notes n'indiquent pas ; ce qui est marqué (hypothèse), (théorie) ou (à confirmer) reste incertain ; ne répète pas ce que les notes disent déjà ; un rapprochement qui repose seulement sur un nom ou un lieu en commun n'est pas une piste. Si aucun recoupement solide n'existe, écris seulement : « Aucune piste solide dans ces extraits. »"""
 
 
 class Chatbot:
@@ -218,6 +218,13 @@ class Chatbot:
         response, error = self._chat(messages, temperature=0.3)
         if error:
             return error
-        response = self._with_sources(self._flag_unsourced(response, len(fragments)), fragments)
+        if "Aucune piste solide" in response:  # le modèle n'a rien trouvé : pas de justification inventée
+            response = "Aucune piste solide dans ces extraits."
+        response = self._flag_unsourced(response, len(fragments))
+        points = open_points(fragments)
+        if points:
+            listing = "\n".join(f"- {text} [{n}]" for n, text in points)
+            response = f"Points encore ouverts dans tes notes :\n{listing}\n\n{response.lstrip()}"
+        response = self._with_sources(response, fragments)
         self._add_exchange(f"piste {subject}", response, kind="piste")
         return response

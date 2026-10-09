@@ -119,7 +119,7 @@ Résultats actuels de la récupération (25 questions de test, 156 fiches) : hit
 
 **Liens entre fiches** : un graphe construit à partir des mentions explicites ; les fiches voisines de celles trouvées complètent le contexte. Sur 14 questions à deux éléments, l'effet est faible (12/14 contre 11/14 pour un même budget de 10 fiches) : le jeu de test est trop petit pour conclure.
 
-**Mode `piste`** : le raisonnement est *calculé* par le graphe (paires de fiches non liées mais qui partagent des voisines), le LLM local (7B) ne fait que formuler. Chaque piste est une hypothèse, doit citer ses fiches (sinon elle est signalée ⚠) et se termine par une vérification à faire auprès du MJ. Limite connue : un modèle 7B produit parfois des pistes vagues ou répète ce que les notes disent déjà ; ce sont des points de départ, pas des déductions.
+**Mode `piste`** : deux parties. D'abord les **points encore ouverts** des notes (éléments marqués hypothèse, théorie, à confirmer, « ? », « non précisé »…), extraits tels quels des fiches **sans modèle de langage** : c'est la partie fiable, citée fiche par fiche. Ensuite 0 à 3 **hypothèses** formulées par le LLM local (7B), chacune appuyée sur deux extraits différents ; s'il n'y a aucun recoupement solide, il répond seulement « Aucune piste solide ». Première version : le modèle devait toujours produire 2 à 4 pistes à partir de fiches simplement voisines dans le graphe, et il en inventait. Un modèle 7B comble volontiers les vides : mieux vaut lui autoriser à ne rien proposer.
 
 ### Évaluation des réponses
 

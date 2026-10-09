@@ -166,6 +166,27 @@ def ensure_citations(response, fragments):
     return "\n".join(lines)
 
 
+OPEN_MARKERS = re.compile(r"\(hypoth|\(théorie|\(à confirmer|\(à vérifier|\(à clarifier|\?|pas encore|inconnu|n'est pas noté|non précisé|aucune idée", re.I)
+
+
+def open_points(fragments, limit=8, width=220):
+    """Questions encore ouvertes dans les notes : éléments marqués (hypothèse), (à confirmer), « ? », etc.
+
+    Extraits tels quels des fiches (aucun modèle de langage) : c'est la partie fiable du mode « piste ».
+    Retourne une liste de (numéro de l'extrait, texte).
+    """
+    points = []
+    for number, fragment in enumerate(fragments, 1):
+        body = fragment["text"].split("Faits :", 1)[-1]
+        name = fragment.get("subsection", "")
+        for item in re.split(r" ; |\. (?=[A-ZÀ-Ý«(])", body):
+            item = item.strip().rstrip(".")
+            if item and OPEN_MARKERS.search(item):
+                item = f"{name} : {item}" if name else item
+                points.append((number, item if len(item) <= width else item[:width].rsplit(" ", 1)[0] + "…"))
+    return points[:limit]
+
+
 def format_label(fragment):
     """Étiquette courte d'une fiche, pour afficher les sources."""
     label = fragment["section"]
