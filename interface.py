@@ -1,12 +1,20 @@
+from pathlib import Path
+
 import streamlit as st
 
 from main import Chatbot
 
-st.set_page_config(page_title="Grimoire de campagne", layout="centered")
+ASSETS = Path(__file__).parent / "assets"
+
+st.set_page_config(
+    page_title="Grimoire de campagne",
+    page_icon=str(ASSETS / "icon.png"),
+    layout="centered",
+)
 
 SOURCES_MARK = "\n\nSources :\n"
-USER_AVATAR = None
-BOT_AVATAR = None
+USER_AVATAR = str(ASSETS / "avatar_user.png")
+BOT_AVATAR = str(ASSETS / "avatar_bot.png")
 
 # Habillage « nuit brumeuse », entièrement local (aucune police ni image téléchargée).
 THEME_CSS = """
