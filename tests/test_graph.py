@@ -79,8 +79,8 @@ class CitationTest(unittest.TestCase):
     def test_unsourced_piste_is_flagged(self):
         text = "Piste 1 : A lié à B. Justification : [1].\n\nPiste 2 : C lié à D sans source.\n"
         out = Chatbot._flag_unsourced(text, n_fragments=3)
-        self.assertEqual(out.count("⚠"), 1)
-        self.assertLess(out.index("Piste 2"), out.index("⚠"))
+        self.assertEqual(out.count("Attention :"), 1)
+        self.assertLess(out.index("Piste 2"), out.index("Attention :"))
 
 
 if __name__ == "__main__":
