@@ -21,7 +21,7 @@ ABSTENTION_MARKERS = [
     "aucune information", "aucun extrait", "ne contien", "ne mentionn", "non mentionn", "pas d'information",
     "pas de mention", "n'est pas dans", "n'apparait pas", "pas dans les extraits", "pas possible de repondre",
     "ne fournissent pas", "ne donnent pas", "ne precis",
-    "sans qu'on sache", "sans que l'on sache", "on ne sait pas",
+    "sans qu'on sache", "sans que l'on sache", "on ne sait pas", "aucune mention",
 ]
 
 UNCERTAINTY_MARKERS = [

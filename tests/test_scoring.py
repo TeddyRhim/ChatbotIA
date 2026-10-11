@@ -26,6 +26,7 @@ class MarkersTest(unittest.TestCase):
         self.assertTrue(is_abstention("Ce n'est pas mentionné dans les notes."))
         self.assertTrue(is_abstention("L'identité du chef n'a pas encore été demandée."))
         self.assertTrue(is_abstention("Elle possède ces souvenirs, sans qu'on sache comment."))
+        self.assertTrue(is_abstention("Je ne trouve aucune mention d'un nom pour cette épée."))
         self.assertFalse(is_abstention("Le chat s'appelle Moustache."))
 
     def test_uncertainty(self):
