@@ -1,0 +1,10 @@
+# Lint Python : bloque la CI tant qu'il ne passe pas. Corriger en local : `ruff check . --fix`.
+target-version = "py311"
+line-length = 120
+extend-exclude = ["legacy", "venv"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+# Les prompts et le CSS de l'interface sont des chaînes longues : les couper changerait le texte
+# envoyé au modèle (et donc les mesures d'évaluation).
+ignore = ["E501"]

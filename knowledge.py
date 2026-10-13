@@ -10,7 +10,7 @@ def load_knowledge(path=KNOWLEDGE_PATH):
     path = Path(path)
     if not path.exists():
         return []
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 

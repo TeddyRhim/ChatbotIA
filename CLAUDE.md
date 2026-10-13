@@ -8,12 +8,14 @@ Chatbot RAG local en français : il répond à partir d'une base de fiches (un u
 - Interface : `streamlit run interface.py`. Terminal : `python console_chat.py`.
 - Tests : `python -m unittest discover -s tests -t .` (les tests utilisent `data/sample_lore`, jamais les vraies fiches).
 - Évaluation de la récupération : `python eval/eval_retrieval.py`. Évaluation des réponses : `python eval/eval_answers.py [--configs a,b] [--limit N] [--repeat N]` (appelle Ollama, plusieurs minutes, écrit `eval/results_*.json`).
-- Pas de linter configuré.
+- Lint : `ruff check .` (corriger avec `ruff check . --fix`) ; la CI échoue tant qu'il ne passe pas. La règle de longueur de ligne est désactivée : couper un prompt changerait le texte envoyé au modèle.
+- La CI lance aussi `pip-audit` ; les failles ChromaDB ignorées visent son mode serveur, non utilisé ici (voir `ci.yml`).
 
 ## Prérequis
 - Python 3.11, Ollama lancé en service local avec `qwen2.5:7b`. Le premier lancement télécharge le modèle d'embeddings.
 - Variables : `LORE_DIR` (dossier des fiches ; sinon `data/lore/` s'il contient des fiches, sinon `data/sample_lore/`), `EMBEDDING_MODEL`. Ce ne sont pas des secrets et aucun `.env` n'est chargé.
 - `main.py` libère le modèle 2 minutes après la dernière question (`keep_alive`).
+- L'historique est borné à 400 messages (`MAX_HISTORY_MESSAGES`). L'embedding de la question est calculé une fois par question (`VectorStore._query_embedding`). Les tests de `VectorStore` utilisent un faux encodeur : aucun modèle téléchargé.
 
 ## Structure
 - `main.py` (classe Chatbot), `knowledge.py` (chargement, recherche, citations), `retrieval.py` et `vector_store.py` (ChromaDB, fusion hybride), `graph.py` (liens entre fiches), `interface.py` (Streamlit), `console_chat.py`.

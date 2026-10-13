@@ -34,7 +34,9 @@ def main():
     store = VectorStore()
     store.ensure_index(knowledge)
     retriever = HybridRetriever(knowledge, store)
-    names = lambda ranking: [knowledge[i]["subsection"] for i in ranking]
+
+    def names(ranking):
+        return [knowledge[i]["subsection"] for i in ranking]
 
     methods = {
         "mots-clés": lambda q: retriever.keyword_indices(q, 12),
@@ -54,17 +56,20 @@ def main():
         for case in simple:
             ranking = names(run(case["question"]))
             ranks.append(next((r for r, n in enumerate(ranking, 1) if n in case["expected"]), None))
-        hit = lambda k: sum(1 for r in ranks if r and r <= k) / len(ranks)
+
+        def hit(k, ranks=ranks):
+            return sum(1 for r in ranks if r and r <= k) / len(ranks)
+
         mrr = sum(1 / r for r in ranks if r) / len(ranks)
         print(f"{label:<26}{hit(3):>8.0%}{hit(6):>8.0%}{hit(12):>8.0%}{mrr:>8.2f}")
         if label == "hybride 8 + 4 voisines":
-            misses = [(c, r) for c, r in zip(simple, ranks) if not r or r > 12]
+            misses = [(c, r) for c, r in zip(simple, ranks, strict=False) if not r or r > 12]
 
     if multi:
         print("\nQuestions à deux éléments (les deux fiches doivent remonter)")
         print(f"{'méthode':<26}{'dans 8':>8}{'dans 12':>9}")
         for label, run in methods.items():
-            def covered(case, k):
+            def covered(case, k, run=run):
                 found = set(names(run(case["question"])[:k]))
                 return bool(found & set(case["expected"])) and bool(found & set(case["also"]))
             print(f"{label:<26}{sum(covered(c, 8) for c in multi) / len(multi):>8.0%}"

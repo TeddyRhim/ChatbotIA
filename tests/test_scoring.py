@@ -1,7 +1,14 @@
 import unittest
 
-from eval.scoring import (cited_fiches, facts_present, flags_uncertainty, is_abstention,
-                          proper_names, score_case, ungrounded_names)
+from eval.scoring import (
+    cited_fiches,
+    facts_present,
+    flags_uncertainty,
+    is_abstention,
+    proper_names,
+    score_case,
+    ungrounded_names,
+)
 
 FRAGMENTS = [
     {"section": "PERSONNAGES", "subsection": "Elowen", "aliases": ["la Gardienne"],

@@ -1,6 +1,7 @@
 # Application (Python 3.11)
 ollama==0.6.3
-streamlit==1.51.0
+streamlit==1.54.0
 chromadb==1.5.9
 sentence-transformers==6.1.0
 protobuf<7  # compatibilité avec streamlit
+pyarrow>=23.0.1  # dépendance de streamlit : faille PYSEC-2026-113 corrigée en 23.0.1
