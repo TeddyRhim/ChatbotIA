@@ -1,7 +1,14 @@
 import unittest
 
-from knowledge import (ensure_citations, fix_citations, load_knowledge, normalize_text, open_points, retrieve,
-                       search_knowledge)
+from knowledge import (
+    ensure_citations,
+    fix_citations,
+    load_knowledge,
+    normalize_text,
+    open_points,
+    retrieve,
+    search_knowledge,
+)
 from retrieval import HybridRetriever, fuse_rankings
 from utils.build_knowledge import SAMPLE_LORE, build, parse_fiches
 

@@ -12,7 +12,6 @@ import json
 import sys
 import tempfile
 import time
-from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

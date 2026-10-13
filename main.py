@@ -4,10 +4,19 @@ import re
 
 import ollama
 
-from knowledge import (load_knowledge, search_knowledge, format_fragment, format_label, cited_numbers, open_points,
-                       ensure_citations)
 from graph import bridges
+from knowledge import (
+    cited_numbers,
+    ensure_citations,
+    format_fragment,
+    format_label,
+    load_knowledge,
+    open_points,
+    search_knowledge,
+)
 from retrieval import HybridRetriever
+
+MAX_HISTORY_MESSAGES = 400  # 200 échanges
 
 SYSTEM_PROMPT = """Tu es l'assistant de campagne d'un joueur de jeu de rôle : tu l'aides à retrouver ce que ses notes disent. Réponds toujours en français, de façon concise.
 Pour les questions sur l'univers, appuie-toi UNIQUEMENT sur les extraits fournis.
@@ -62,7 +71,7 @@ class Chatbot:
         if not os.path.exists(self.history_file):
             return
         try:
-            with open(self.history_file, "r", encoding="utf-8") as f:
+            with open(self.history_file, encoding="utf-8") as f:
                 self.history = json.load(f)
         except (json.JSONDecodeError, OSError):
             self.history = []
@@ -81,6 +90,8 @@ class Chatbot:
     def _add_exchange(self, user_msg, bot_msg, kind):
         self.history.append({"role": "user", "kind": kind, "content": user_msg})
         self.history.append({"role": "bot", "kind": kind, "content": bot_msg})
+        # Historique borné : le fichier est réécrit à chaque échange, il ne doit pas grossir sans fin.
+        self.history = self.history[-MAX_HISTORY_MESSAGES:]
         self._save_history()
 
 
@@ -185,7 +196,9 @@ class Chatbot:
 
 
     def _bridge_text(self, indices):
-        names = lambda ids: ", ".join(self.knowledge_list[j]["subsection"] for j in ids)
+        def names(ids):
+            return ", ".join(self.knowledge_list[j]["subsection"] for j in ids)
+
         lines = [
             f"- {self.knowledge_list[a]['subsection']} ↔ {self.knowledge_list[b]['subsection']} : en commun {names(shared)}"
             for _, a, b, shared in bridges(indices, self.retriever.adjacency)

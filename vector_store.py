@@ -22,6 +22,7 @@ class VectorStore:
         self.path = Path(path)
         self.model_name = model_name
         self._model = None
+        self._last_query = None
         self._client = chromadb.PersistentClient(
             path=str(self.path), settings=Settings(anonymized_telemetry=False)
         )
@@ -36,6 +37,13 @@ class VectorStore:
         # Les modèles e5 attendent « passage: » côté documents et « query: » côté questions.
         prefix = prefix if "e5" in self.model_name else ""
         return self.model.encode([prefix + t for t in texts], normalize_embeddings=True).tolist()
+
+    def _query_embedding(self, question):
+        """Embedding de la question, gardé pour la question en cours : la recherche et le calcul
+        de similarité des voisines l'utilisent tous les deux."""
+        if self._last_query is None or self._last_query[0] != question:
+            self._last_query = (question, self._embed([question], "query: ")[0])
+        return self._last_query[1]
 
     def _signature(self, documents):
         digest = hashlib.sha1("\n".join([self.model_name] + documents).encode("utf-8")).hexdigest()
@@ -77,7 +85,7 @@ class VectorStore:
         if collection.count() == 0:
             return []
         result = collection.query(
-            query_embeddings=self._embed([question], "query: "),
+            query_embeddings=[self._query_embedding(question)],
             n_results=min(k, collection.count()),
         )
         return [int(i) for i in result["ids"][0]]
@@ -88,8 +96,8 @@ class VectorStore:
             return {}
         collection = self._client.get_collection("lore")
         stored = collection.get(ids=[str(i) for i in indices], include=["embeddings"])
-        query = self._embed([question], "query: ")[0]
+        query = self._query_embedding(question)
         return {
-            int(i): sum(a * b for a, b in zip(query, vector))
-            for i, vector in zip(stored["ids"], stored["embeddings"])
+            int(i): sum(a * b for a, b in zip(query, vector, strict=False))
+            for i, vector in zip(stored["ids"], stored["embeddings"], strict=False)
         }

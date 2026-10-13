@@ -98,7 +98,9 @@ def bridges(indices, adjacency, top=5):
     Une voisine commune très connectée (ex. Strahd) compte moins qu'une voisine rare.
     Retourne [(score, a, b, [voisines communes])], les plus fortes d'abord.
     """
-    weight = lambda j: 1 / math.log2(2 + len(adjacency[j]))
+    def weight(j):
+        return 1 / math.log2(2 + len(adjacency[j]))
+
     found = []
     candidates = [i for i in dict.fromkeys(indices) if adjacency.get(i)]
     for pos, a in enumerate(candidates):
