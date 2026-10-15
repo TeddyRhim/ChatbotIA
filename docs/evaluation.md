@@ -10,7 +10,7 @@ Ce document garde la trace des mesures faites pendant le développement. Règles
 ## Méthode
 
 - **Récupération** (`python eval/eval_retrieval.py`) : pour chaque question, une des fiches attendues doit apparaître dans les k premières. Métriques : hit@k et MRR. Configurations : mots-clés, sens (embeddings), hybride.
-- **Réponses** (`python eval/eval_answers.py [--configs a,b] [--repeat N]`) : notation déterministe, sans modèle juge (`eval/scoring.py`).
+- **Réponses** (`python eval/eval_answers.py [--configs a,b] [--repeat N]`) : notation déterministe, sans modèle juge (`eval/scoring.py`). Pour vérifier une correction, `--failed` (échecs du dernier passage complet) ou `--only` (questions contenant certains mots) évitent un passage complet ; ces passages partiels ne servent pas à produire les chiffres ci-dessous.
   - Types de questions : fait (faits attendus), abstention (les notes ne disent rien), incertain (notes contradictoires ou hypothétiques).
   - Critères : faits attendus présents ; faits retrouvés dans les fiches réellement citées ; abstention reconnue ; réserve exprimée ; aucun nom propre absent des fiches fournies (ancrage).
   - Configurations : LLM seul, mots-clés, hybride, hybride + liens (fiches voisines dans le graphe).
@@ -21,10 +21,11 @@ Ce document garde la trace des mesures faites pendant le développement. Règles
 | Date | Commit | Fiches | Questions | Mots-clés | Sens | Hybride |
 |---|---|---|---|---|---|---|
 | 2026-10-07 | `0c712e6` | 156 | 25 | 88 % | 92 % | 96 % |
+| 2026-10-15 | `8442af6` | 201 | 25 | 88 % | 92 % | 96 % |
 
-hit@6. Mesure **antérieure à l'enrichissement des fiches** (le nombre de fiches est passé de 156 à 192 depuis) : elle n'est pas représentative de l'état actuel et n'a pas été refaite.
+hit@6. Mesure du 2026-10-15 en détail (hybride) : hit@3 88 %, hit@12 100 %, MRR 0,78. Entre les deux mesures, trois listes de fiches attendues ont été complétées par de nouvelles fiches qui contiennent aussi la réponse : les deux lignes ne sont donc pas strictement comparables.
 
-Effet du graphe de liens, mesuré au commit `1fe12e3` (2026-10-07) sur 14 questions à deux éléments : 12/14 contre 11/14 pour un même budget de 10 fiches. Jeu trop petit pour conclure.
+Questions à deux éléments (les deux fiches parmi les 8 premières), 14 questions : 2026-10-07 (`1fe12e3`) 12/14 avec le graphe contre 11/14 sans, pour un budget de 10 fiches ; 2026-10-15 (`8442af6`) 13/14 en hybride, 12/14 en mots-clés comme en sens seul. Jeu trop petit pour conclure.
 
 ## Réponses : historique
 
@@ -50,6 +51,10 @@ Colonnes : Faits, Abstention, Incertitude, Ancrage, Global (— : non rapporté)
 | | | | | | Hybride + liens | 96 % | 83 % | 86 % | 100 % | 94 % | 5,3 |
 | 2026-10-09 | `3781ded` | 192 | 113 | 2 | Hybride | 95 % | 100 % | 86 % | 99 % | 95 % | 4,3 |
 | | | | | | Hybride + liens | 98 % | 95 % | 100 % | 100 % | 98 % | 6,6 |
+| 2026-10-15 | `8442af6` | 201 | 117 | 1 | LLM seul | 0 % | 56 % | 25 % | 68 % | 5 % | 6,0 |
+| | | | | | Mots-clés | 95 % | 89 % | 75 % | 100 % | 94 % | 7,4 |
+| | | | | | Hybride | 96 % | 100 % | 100 % | 100 % | 97 % | 6,1 |
+| | | | | | Hybride + liens | 96 % | 89 % | 75 % | 100 % | 95 % | 9,4 |
 
 Précisions sur les lignes :
 
@@ -61,6 +66,7 @@ Précisions sur les lignes :
 - `4501648` : deux corrections de notation (un mot après une citation n'est plus pris pour un nom inventé ; « sans qu'on sache » compte comme réserve), puis mesure refaite sur de nouvelles réponses.
 - `dacd66d` : a révélé qu'à une question sans réponse dans les notes, le modèle complétait avec une position plausible.
 - `3781ded` : après une phase de questions-réponses avec le joueur pour enrichir les fiches.
+- `8442af6` : après une seconde phase de questions-réponses (réponses du meneur de jeu intégrées aux fiches, noms principaux de plusieurs fiches changés, anciens noms gardés en alias). Jeu passé de 113 à 117 questions ; sept attentes mises à jour parce que les fiches répondent désormais (des abstentions et des « incertain » sont devenus des faits). Un seul passage. « Hybride + liens » passe sous « hybride » (95 % contre 97 %) : écart dans le bruit. Un premier lancement avait été interrompu par une erreur CUDA d'Ollama, sans rapport avec le code.
 
 ## Ce que les échecs ont appris (corrections faites dans les fiches, pas dans le code)
 
