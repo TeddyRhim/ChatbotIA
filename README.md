@@ -74,9 +74,10 @@ Les tests utilisent uniquement `data/sample_lore`. Une CI GitHub Actions les lan
 
 - `python eval/eval_retrieval.py` : récupération (hit@k, MRR) pour mots-clés, sens et hybride.
 - `python eval/eval_answers.py [--configs a,b] [--limit N] [--repeat N]` : réponses, avec une notation déterministe sans modèle juge (faits attendus, faits présents dans les fiches citées, abstention, réserve, aucun nom propre absent des fiches). Appelle Ollama, plusieurs minutes.
+- `--failed` ne repose que les questions en échec au dernier passage complet, `--only "mot1,mot2"` celles qui contiennent ces mots : pratique pour vérifier une correction en quelques minutes, mais un passage complet reste nécessaire pour voir les régressions.
 - Jeu d'exemple public : 5 questions de récupération (`data/sample_lore/_eval.json`) et 8 questions de réponses (4 faits, 2 abstentions, 2 incertains, `_eval_answers.json`). Il sert à démontrer la méthode, pas à produire des chiffres.
 
-Dernière mesure documentée : 2026-10-09, sur les 192 fiches privées de l'auteur, 113 questions, 2 passages : 95 % de réussite globale en hybride, 98 % en hybride + liens. L'écart entre les deux est dans le bruit de mesure (0 à 3 points). Ces fichiers de résultats ne sont pas versionnés ; la méthode, l'historique daté de chaque mesure et les enseignements sont dans [docs/evaluation.md](docs/evaluation.md).
+Dernière mesure documentée : 2026-10-15, sur les 201 fiches privées de l'auteur, 117 questions, 1 passage : 97 % de réussite globale en hybride, 95 % en hybride + liens, 94 % en mots-clés seuls et 5 % pour le LLM seul, sans les fiches. L'écart entre hybride et hybride + liens est dans le bruit de mesure (0 à 3 points). Ces fichiers de résultats ne sont pas versionnés ; la méthode, l'historique daté de chaque mesure et les enseignements sont dans [docs/evaluation.md](docs/evaluation.md).
 
 ## Limites connues
 
