@@ -7,7 +7,7 @@ Chatbot RAG local en français : il répond à partir d'une base de fiches (un u
 - Construire la base : `python utils/build_knowledge.py` (à relancer après toute modification des fiches).
 - Interface : `streamlit run interface.py`. Terminal : `python console_chat.py`.
 - Tests : `python -m unittest discover -s tests -t .` (les tests utilisent `data/sample_lore`, jamais les vraies fiches).
-- Évaluation de la récupération : `python eval/eval_retrieval.py`. Évaluation des réponses : `python eval/eval_answers.py [--configs a,b] [--limit N] [--repeat N]` (appelle Ollama, plusieurs minutes, écrit `eval/results_*.json`).
+- Évaluation de la récupération : `python eval/eval_retrieval.py`. Évaluation des réponses : `python eval/eval_answers.py [--configs a,b] [--limit N] [--repeat N] [--only "mot1,mot2"] [--failed]` (appelle Ollama, plusieurs minutes, écrit `eval/results_*.json`). Pour vérifier une correction : `--configs hybride+liens --failed` (seulement les échecs du dernier passage complet, environ 2 min) ; un passage partiel écrit `results_*_partiel.json` et ne voit pas les régressions ailleurs, donc passage complet avant de publier des chiffres.
 - Lint : `ruff check .` (corriger avec `ruff check . --fix`) ; la CI échoue tant qu'il ne passe pas. La règle de longueur de ligne est désactivée : couper un prompt changerait le texte envoyé au modèle.
 - La CI lance aussi `pip-audit` ; les failles ChromaDB ignorées visent son mode serveur, non utilisé ici (voir `ci.yml`).
 
