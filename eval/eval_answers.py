@@ -2,6 +2,12 @@
 
     python eval/eval_answers.py                        # toutes les configurations
     python eval/eval_answers.py --configs hybride+liens --limit 5
+    python eval/eval_answers.py --configs hybride+liens --failed          # échecs du dernier passage complet
+    python eval/eval_answers.py --configs hybride+liens --only "Elowen,Vélan"
+
+Un passage partiel (--limit, --only, --failed) écrit dans results_*_partiel.json : les résultats
+complets, qui servent de référence à --failed, ne sont pas écrasés. Un passage ciblé ne détecte pas
+les régressions sur les autres questions : refaire un passage complet avant de publier des chiffres.
 
 Jeu de questions : data/lore/_eval_answers.json (privé) sinon data/sample_lore/_eval_answers.json (public).
 Critères : voir eval/scoring.py. Les réponses sont générées à température 0,3 : une seule exécution
@@ -35,6 +41,26 @@ def load_cases():
     sys.exit("Aucun jeu de questions trouvé.")
 
 
+def failed_questions(results, configs):
+    """Questions en échec dans un fichier de résultats, pour les configurations demandées.
+
+    Si aucune de ces configurations n'y figure, prend la dernière configuration du fichier.
+    """
+    present = [c for c in configs if c in results] or list(results)[-1:]
+    return {r["question"] for c in present for r in results[c] if not r["checks"]["passed"]}
+
+
+def select_cases(cases, only="", failed=None):
+    """Filtre les questions : `only` = fragments séparés par des virgules (sans casse),
+    `failed` = ensemble de questions à garder (None : pas de filtre)."""
+    terms = [t.strip().lower() for t in only.split(",") if t.strip()]
+    if terms:
+        cases = [c for c in cases if any(t in c["question"].lower() for t in terms)]
+    if failed is not None:
+        cases = [c for c in cases if c["question"] in failed]
+    return cases
+
+
 def make_bot():
     history = Path(tempfile.mkdtemp()) / "history.json"
     return Chatbot(history_file=str(history), context_turns=0)
@@ -63,12 +89,24 @@ def main():
     parser.add_argument("--configs", default=",".join(CONFIGS))
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--repeat", type=int, default=1)
+    parser.add_argument("--only", default="", help="fragments de question séparés par des virgules")
+    parser.add_argument("--failed", action="store_true", help="seulement les échecs du dernier passage complet")
     args = parser.parse_args()
 
     path, cases = load_cases()
+    configs = args.configs.split(",")
+    full_out = ROOT / "eval" / f"results_{path.parent.name}.json"
+    failed = None
+    if args.failed:
+        if not full_out.exists():
+            sys.exit(f"--failed : aucun passage complet trouvé ({full_out.relative_to(ROOT)}).")
+        failed = failed_questions(json.loads(full_out.read_text(encoding="utf-8")), configs)
+    cases = select_cases(cases, args.only, failed)
     if args.limit:
         cases = cases[: args.limit]
-    configs = args.configs.split(",")
+    if not cases:
+        sys.exit("Aucune question ne correspond au filtre.")
+    partial = bool(args.only or args.failed or args.limit)
     print(f"{len(cases)} questions ({path.relative_to(ROOT)}), configurations : {', '.join(configs)}, "
           f"{args.repeat} passage(s)\n")
 
@@ -89,7 +127,7 @@ def main():
         results[config] = rows
 
     report(results)
-    out = ROOT / "eval" / f"results_{path.parent.name}.json"
+    out = full_out.with_name(f"results_{path.parent.name}_partiel.json") if partial else full_out
     out.write_text(json.dumps(results, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\nRéponses détaillées : {out.relative_to(ROOT)} (ignoré par git)")
 
