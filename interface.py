@@ -216,7 +216,8 @@ h2, h3, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
   border: 1px solid rgba(138, 109, 59, 0.25);
   border-radius: 0;
 }
-[data-testid="stSlider"] [role="slider"] { background: var(--sang); border: 1px solid var(--or-clair); }
+[data-testid="stSlider"] [role="slider"],
+[data-testid="stSlider"] div:has(> [data-testid="stSliderThumbValue"]) { background: var(--sang); border: 1px solid var(--or-clair); }
 code { background: #14090c !important; color: #d9b98a !important; border: 1px solid rgba(138, 109, 59, 0.25); border-radius: 0; }
 .stCaption, [data-testid="stCaptionContainer"] { color: #6f7b89; }
 [data-testid="stSpinner"] { color: var(--or-clair); font-style: italic; }
