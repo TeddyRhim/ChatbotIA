@@ -1,6 +1,6 @@
 # Uniquement pour l'experience de fine-tuning abandonnee (dossier legacy/)
 -r requirements.txt
-transformers>=5.20.1
+transformers>=5.20.2
 torch==2.14.1
 peft==0.21.2
 datasets==4.8.5
